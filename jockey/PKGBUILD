@@ -4,13 +4,13 @@
 
 pkgname=jockey
 pkgver=0.5.9
-pkgrel=1
+pkgrel=2
 pkgdesc="Jockey provides the infrastructure and the user interface for finding and installing third-party drivers which are applicable to the computer"
 url="http://launchpad.net/jockey"
 arch=('any')
 license=('GPL')
 source=("http://launchpad.net/${pkgname}/trunk/${pkgver}/+download/${pkgname}-${pkgver}.tar.gz")
-depends=('python>=2.6' 'dbus-python' 'pyxdg' 'x-kit' 'polkit' 'pygtk' 'python-notify')
+depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'packagekit=0.6.7-2' 'pygtk' 'python-notify' 'lsb-release')
 makedepends=('python-distutils-extra')
 
 build() {
@@ -23,7 +23,11 @@ build() {
 package() {
 	cd "${srcdir}/${pkgname}-${pkgver}"
 	python setup.py install --prefix="/usr" --root="${pkgdir}" || return 1
+
 	rm -rf "${pkgdir}/usr/share/omf"
+	find "${pkgdir}/usr/share/icons" -name "jockey-kde*" -exec rm -f {} \;
+	# this one should prolly go into postinstall script...
+	ln -s "jockey-gtk" "${pkgdir}/usr/bin/jockey"
 }
 
 md5sums=('60ab79e6088f80363dca2749fa79b0bf')
