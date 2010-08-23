@@ -1,0 +1,60 @@
+# Contributor: PirateJonno <j@skurvy.no-ip.org>
+# Contributor: Zom <zom@eevul.org>
+
+pkgname=packagekit-pacman
+pkgver=0.6.7
+pkgrel=2
+pkgdesc='A system designed to make installation and updates of packages easier. Pacman backend supplied by PirateJonno'
+arch=('i686' 'x86_64')
+url='http://www.packagekit.org/'
+license=('GPL')
+depends=('glib2>=2.22.0' 'dbus-glib>=0.74' 'polkit>=0.92'
+	 'pacman-glib-git' 'python>=2.6' 'sqlite3' 'networkmanager>=0.6.4')
+makedepends=('intltool' 'gobject-introspection' 'pm-utils')
+options=('!libtool')
+backup=('var/lib/PackageKit/transactions.db'
+        'etc/PackageKit/pacman.d/pacman.conf'
+        'etc/PackageKit/pacman.d/repos.list')
+provides=('packagekit' 'packagekit=$pkgver')
+conflicts=('packagekit')
+source=("http://www.packagekit.org/releases/PackageKit-${pkgver}.tar.bz2")
+sha256sums=('79143b7a23ce084eb947006deaaa953f60c4cf3d4dca1fcd1201f5713151ffa8')
+
+build() {
+	cd "${srcdir}/PackageKit-${pkgver}"
+	
+	sed -i 's/SUBDIRS = test/SUBDIRS =/' backends/Makefile.in
+	
+	./autogen.sh --prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--libexecdir=/usr/lib/PackageKit \
+		--disable-static \
+		--disable-gtk-doc \
+		--disable-qt \
+		--disable-managed \
+		--disable-tests \
+		--disable-local \
+		--disable-browser-plugin \
+		--disable-gstreamer-plugin \
+		--disable-gtk-module \
+		--disable-command-not-found \
+		--disable-cron \
+		--disable-debuginfo-install \
+		--enable-pm-utils \
+		--disable-dummy \
+		--enable-pacman \
+		--with-default-backend=pacman
+
+	make -s || return 1
+	make -s DESTDIR=${pkgdir} install || return 1
+
+	# clean up unneeded stuff
+	rm -rf "${pkgdir}/usr/share/PackageKit/website"
+
+	# rename bash completion script
+	mv "${pkgdir}/etc/bash_completion.d/pk-completion.bash" "${pkgdir}/etc/bash_completion.d/pkcon"
+
+	# make sure log gets removed
+	touch "${pkgdir}/var/log/PackageKit"
+}
