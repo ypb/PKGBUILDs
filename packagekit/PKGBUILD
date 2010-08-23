@@ -1,0 +1,57 @@
+# Contributor: onestep_ua <onestep@ukr.net>
+
+pkgname=packagekit
+pkgver=0.6.2
+pkgrel=1
+pkgdesc="A system designed to make installing and updating software on your computer easier"
+arch=('i686' 'x86_64')
+url="http://packagekit.org/"
+license=('GPL')
+depends=('dbus-glib>=0.82' 'polkit>=0.96' 'networkmanager>=0.8' 'pacman>=3.3.3' 'libtar' 'python>=2.6.5' 'sqlite3')
+makedepends=('intltool' 'pm-utils')
+options=('!libtool')
+source=(http://www.packagekit.org/releases/PackageKit-${pkgver}.tar.bz2)
+md5sums=('c5a07b023054882750bb273381000194')
+
+build() {
+  cd "${srcdir}/PackageKit-${pkgver}"
+
+  # disable building of test backend
+  sed -i 's/SUBDIRS = test/SUBDIRS =/' backends/Makefile.in
+
+  ./configure --prefix=/usr \
+      --sysconfdir=/etc \
+      --localstatedir=/var \
+      --libexecdir=/usr/lib/PackageKit \
+      --disable-static \
+      --disable-gtk-doc \
+      --disable-qt \
+      --disable-managed \
+      --disable-tests \
+      --disable-local \
+      --disable-browser-plugin \
+      --disable-gstreamer-plugin \
+      --disable-gtk-module \
+      --disable-command-not-found \
+      --disable-cron \
+      --disable-debuginfo-install \
+      --enable-pm-utils \
+      --disable-ruck \
+      --disable-dummy \
+      --enable-alpm \
+      --with-default-backend=alpm
+  make || return 1
+  make DESTDIR="${pkgdir}" install
+
+  # clean up unneeded stuff
+  rm -rf "${pkgdir}/usr/share/PackageKit/website"
+  rmdir "${pkgdir}/var/log"
+
+  # remove empty transactions db
+  rm -f "${pkgdir}/var/lib/PackageKit/transactions.db"
+
+  # rename bash completion script
+  mv "${pkgdir}/etc/bash_completion.d/pk-completion.bash" "${pkgdir}/etc/bash_completion.d/pkcon"
+}
+
+# vim:set ts=2 sw=2 et:
