@@ -1,17 +1,18 @@
 # Contributor: onestep_ua <onestep@ukr.net>
 
 pkgname=packagekit
-pkgver=0.6.2
-pkgrel=1
+pkgver=0.6.7
+pkgrel=2
 pkgdesc="A system designed to make installing and updating software on your computer easier"
 arch=('i686' 'x86_64')
 url="http://packagekit.org/"
 license=('GPL')
-depends=('dbus-glib>=0.82' 'polkit>=0.96' 'networkmanager>=0.8' 'pacman>=3.3.3' 'libtar' 'python>=2.6.5' 'sqlite3')
-makedepends=('intltool' 'pm-utils')
+depends=('dbus-glib>=0.82' 'polkit>=0.96' 'networkmanager>=0.8' 'pacman>=3.4.0' 'libtar' 'python>=2.6.5' 'sqlite3' )
+makedepends=('intltool' 'pm-utils' 'gir-repository>=0.6.6' 'pacman-glib>=3.4.0')
+optdepends=('pacman-glib: for pacman backend')
 options=('!libtool')
 source=(http://www.packagekit.org/releases/PackageKit-${pkgver}.tar.bz2)
-md5sums=('c5a07b023054882750bb273381000194')
+md5sums=('842d6b2b02baabc3b00ee7a77887241a')
 
 build() {
   cd "${srcdir}/PackageKit-${pkgver}"
@@ -36,11 +37,16 @@ build() {
       --disable-cron \
       --disable-debuginfo-install \
       --enable-pm-utils \
-      --disable-ruck \
       --disable-dummy \
       --enable-alpm \
+      --enable-pacman \
       --with-default-backend=alpm
-  make || return 1
+  make
+}
+
+package() {
+  cd "${srcdir}/PackageKit-${pkgver}"
+
   make DESTDIR="${pkgdir}" install
 
   # clean up unneeded stuff

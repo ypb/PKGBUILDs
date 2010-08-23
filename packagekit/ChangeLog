@@ -1,6 +1,22 @@
+2010-08-05 Valeriy Lyasotskiy <onestep@ukr.net>
+
+	* 0.6.7-2 :
+	pacman backend turned on
+
+2010-08-04 Valeriy Lyasotskiy <onestep@ukr.net>
+
+	* 0.6.7-1 :
+	bumped pacman version due to API changes
+
+2010-06-17 Valeriy Lyasotskiy <onestep@ukr.net>
+
+	* 0.6.5-1 :
+	new upstream release
+	added gir-repository make dependency
+
 2010-03-26 Valeriy Lyasotskiy <onestep@ukr.net>
 
-	* 0.6.2-1:
+	* 0.6.2-1 :
 	new upstream release
 	transactions.db removed from package
 
