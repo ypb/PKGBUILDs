@@ -2,32 +2,86 @@
 # Contributor: PirateJonno <j@skurvy.no-ip.org>
 # Contributor: Michal Kowalski <kowalski.michal@gmail.com>
 
-pkgname=jockey
-pkgver=0.5.9
-pkgrel=2
+pkgbase=jockey
+pkgname=('jockey-common'
+	 'jockey-gtk'
+	 'jockey-kde')
+pkgver=0.5.10
+pkgrel=1
 pkgdesc="Jockey provides the infrastructure and the user interface for finding and installing third-party drivers which are applicable to the computer"
 url="http://launchpad.net/jockey"
 arch=('any')
 license=('GPL')
-source=("http://launchpad.net/${pkgname}/trunk/${pkgver}/+download/${pkgname}-${pkgver}.tar.gz")
-depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'packagekit=0.6.7-2' 'pygtk' 'python-notify' 'lsb-release')
-makedepends=('python-distutils-extra')
+groups=('jockey')
+source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz")
+# depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'polkit-gnome' 'consolekit' 'packagekit=0.6.7-2' 'pygtk' 'python-notify' 'lsb-release' 'kdebindings-python' 'pyqt')
+makedepends=('python-distutils-extra' 'kdebindings-python' 'pyqt')
+options=(!emptydirs)
+
+sha1sums=('3d03565f7a1e6e36fb9aeb40a27262a843eed43a')
 
 build() {
-	cd "${srcdir}/${pkgname}-${pkgver}"
-	rm -rf kde
-	sed -i "s|, 'kde/jockey-kde'||" setup.py
+	cd "${srcdir}/${pkgbase}-${pkgver}"
 	python setup.py build || return 1
 }
 
-package() {
-	cd "${srcdir}/${pkgname}-${pkgver}"
+mkcommon() {
+	cd "${srcdir}/${pkgbase}-${pkgver}"
 	python setup.py install --prefix="/usr" --root="${pkgdir}" || return 1
-
-	rm -rf "${pkgdir}/usr/share/omf"
-	find "${pkgdir}/usr/share/icons" -name "jockey-kde*" -exec rm -f {} \;
-	# this one should prolly go into postinstall script...
-	ln -s "jockey-gtk" "${pkgdir}/usr/bin/jockey"
 }
 
-md5sums=('60ab79e6088f80363dca2749fa79b0bf')
+fixservices() {
+	sed -i -e 's|jockey-gtk|jockey-text|' "${pkgdir}/usr/share/dbus-1/services/com.ubuntu.DeviceDriver.service"
+}
+
+kderm='bin/jockey-kde share/applications/jockey-kde.desktop share/autostart/jockey-kde.desktop lib/python2.6/site-packages/jockey/kdeui share/kde4'
+gtkrm='bin/jockey-gtk share/applications/jockey-gtk.desktop share/autostart/jockey-gtk.desktop share/jockey/jockey-gtk.ui'
+#noncommonrm='share/icons'
+#commonicons='share/icons/hicolor/scalable/actions'
+
+package_jockey-common() {
+	pkgdesc="${pkgdesc}. These are common files required by GTK or KDE version of Jockey"
+	depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'packagekit=0.6.7-2' 'lsb-release')
+	install=${pkgbase}-common.install
+	provides=('jockey' 'jockey-common')
+
+	mkcommon || return 1
+
+	for f in $kderm $gtkrm ; do
+	    rm -rf "${pkgdir}/usr/${f}"
+	done
+	fixservices
+	find "${pkgdir}/usr/share/icons" \( -name "jockey-kde.*" -or -name "jockey.*" \) -exec rm -f {} \;
+}
+
+commonrm='../etc bin/jockey-text share/dbus-1 share/doc/jockey share/jockey/jockey-backend share/locale share/polkit-1 share/icons/hicolor/scalable/actions'
+commongtkrm='lib'
+
+package_jockey-gtk() {
+	pkgdesc="${pkgdesc}. This is Jockey's GTK frontend"
+	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'pygtk' 'python-notify')
+	optdepends=('gdm: for "out of the box" polkit-gnome/consolekit handling')
+	provides=('jockey' 'jockey-gtk')
+
+	mkcommon || return 1
+
+	for f in $kderm $commonrm $commongtkrm ; do
+	    rm -rf "${pkgdir}/usr/${f}"
+	done
+	find "${pkgdir}/usr/share/icons" -name "jockey-kde.*" -exec rm -f {} \;
+}
+
+commonkderm='lib/python2.6/site-packages/jockey/*.py* lib/python2.6/site-packages/jockey-*.egg-info'
+
+package_jockey-kde() {
+	pkgdesc="${pkgdesc}. This is Jockey's KDE frontend"
+	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'kdebindings-python' 'pyqt')
+	optdepends=('gdm: for "out of the box" polkit-gnome/consolekit handling')
+
+	mkcommon || return 1
+
+	for f in $gtkrm $commonrm $commonkderm ; do
+	    rm -rf "${pkgdir}/usr/"${f}
+	done
+	find "${pkgdir}/usr/share/icons" -name "jockey.*" -exec rm -f {} \;
+}

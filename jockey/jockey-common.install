@@ -1,0 +1,55 @@
+fix_rc_conf() {
+    local conf_file=etc/rc.conf
+    local back_file=${conf_file}.jockey-backup
+    cp $conf_file $back_file
+    sed -e "s|^[[:blank:]]*DAEMONS=.*\$|DAEMONS=($*)|" $back_file > $conf_file && \
+     rm -f $back_file
+    # TODO: fix this "mess"?
+    #echo "Created /${back_file}"
+}
+
+activate_daemon() {
+    local demon="$1" ;
+    . etc/rc.conf ;
+    for d in ${DAEMONS[@]} ; do
+	if [ "$d" = "$demon" ]; then
+	    return 0 ;
+	fi
+    done
+    DAEMONS+=($demon) ;
+#    echo ${DAEMONS[@]} ;
+    fix_rc_conf ${DAEMONS[@]}
+
+}
+
+deactivate_daemon() {
+    local demon="$1" ;
+    local -a demons ;
+    local found=0 ;
+    . etc/rc.conf ;
+    for d in ${DAEMONS[@]} ; do
+	if [ "$d" = "$demon" ]; then
+	    found=1 ;
+	else
+	    demons+=($d) ;
+	fi
+    done
+    if [ $found -eq 1 ] ; then
+#	echo "found: ${demons[@]}" ;
+	fix_rc_conf ${demons[@]} ;
+    else
+#	echo "not found: ${demons[@]}" ;
+	return 0 ;
+    fi
+}
+
+post_install() {
+    activate_daemon dbus
+    /etc/rc.d/dbus start
+}
+
+post_remove() {
+    # perhaps some other package "activated" dbus but how would we know not to undo it? /hmmm
+    deactivate_daemon dbus
+    # TOFIX: is there a fix?
+}
