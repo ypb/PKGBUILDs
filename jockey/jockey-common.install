@@ -44,12 +44,16 @@ deactivate_daemon() {
 }
 
 post_install() {
+    # TODO: permissions on /var/cache/jockey
     activate_daemon dbus
-    /etc/rc.d/dbus start
+    # if not running
+    . /etc/rc.d/functions
+    ck_daemon dbus && /etc/rc.d/dbus start
 }
 
 post_remove() {
     # perhaps some other package "activated" dbus but how would we know not to undo it? /hmmm
     deactivate_daemon dbus
     # TOFIX: is there a fix?
+    rm -rf /var/cache/jockey
 }
