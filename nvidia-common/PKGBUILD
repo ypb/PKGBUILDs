@@ -1,0 +1,54 @@
+# Maintainer: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
+
+_deb_96=nvidia-96-modaliases_96.43.18-0ubuntu1_i386.deb
+_deb_173=nvidia-173-modaliases_173.14.28-0ubuntu1_i386.deb
+_deb_260=nvidia-current-modaliases_260.19.06-0ubuntu1_i386.deb
+
+pkgname=nvidia-common
+pkgver=0.2.24
+pkgrel=3
+pkgdesc="Arch port of Ubuntu python utilities and files used to discover nvidia hardware/drivers"
+arch=('any')
+url="https://launchpad.net/nvidia-common"
+license=('GPL2' 'custom:nvidia')
+groups=()
+depends=('python2' 'pciutils')
+makedepends=('python2' 'libarchive')
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("http://archive.ubuntu.com/ubuntu/pool/main/n/${pkgname}/${pkgname}_${pkgver}.tar.gz"
+         http://archive.ubuntu.com/ubuntu/pool/main/n/nvidia-graphics-drivers-96/${_deb_96}
+         http://archive.ubuntu.com/ubuntu/pool/main/n/nvidia-graphics-drivers-173/${_deb_173}
+         http://archive.ubuntu.com/ubuntu/pool/main/n/nvidia-graphics-drivers/${_deb_260})
+md5sums=('1f3ef18c24fb4eba0f78c6b028db4032'
+         '66da505a43b328f95ce4d8a09c4009ec'
+         '73b044e1a4ac44dbb7c3ad794a3f1464'
+         '594df65880ebc47b512dc9c57a4ffeb2')
+noextract=(${_deb_96} ${_deb_173} ${_deb_260})
+
+_prefix="/usr"
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  python2 setup.py build || return 1
+
+  cd $pkgdir
+  for f in ${_deb_96} ${_deb_173} ${_deb_260} ; do
+    bsdtar -xf $srcdir/$f -O data.tar.gz | tar xzf -
+  done
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  python2 setup.py install --prefix=${_prefix} --root="${pkgdir}" || return 1
+}
+
+# vim:set ts=2 sw=2 et:
