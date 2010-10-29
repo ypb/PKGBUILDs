@@ -6,12 +6,12 @@ _deb_260=nvidia-current-modaliases_260.19.06-0ubuntu1_i386.deb
 
 pkgname=nvidia-common
 pkgver=0.2.24
-pkgrel=3
+pkgrel=4
 pkgdesc="Arch port of Ubuntu python utilities and files used to discover nvidia hardware/drivers"
 arch=('any')
 url="https://launchpad.net/nvidia-common"
 license=('GPL2' 'custom:nvidia')
-groups=()
+groups=('ypb')
 depends=('python2' 'pciutils')
 makedepends=('python2' 'libarchive')
 optdepends=()
@@ -37,18 +37,25 @@ _prefix="/usr"
 build() {
   cd "$srcdir/$pkgname-$pkgver"
 
-  python2 setup.py build || return 1
-
-  cd $pkgdir
-  for f in ${_deb_96} ${_deb_173} ${_deb_260} ; do
-    bsdtar -xf $srcdir/$f -O data.tar.gz | tar xzf -
-  done
+  python2 setup.py build
 }
 
 package() {
   cd "$srcdir/$pkgname-$pkgver"
 
-  python2 setup.py install --prefix=${_prefix} --root="${pkgdir}" || return 1
+  python2 setup.py install --root="${pkgdir}"
+  # --prefix=${_prefix}
+
+  cd $pkgdir
+  for f in ${_deb_96} ${_deb_173} ${_deb_260} ; do
+    bsdtar -xf $srcdir/$f -O data.tar.gz | tar xzf -
+  done
+
+  rm -rf usr/lib/nvidia
+  rm -rf etc
+
+  mkdir -p usr/share/doc/$pkgname
+  mv usr/share/doc/nvidia*modaliases usr/share/doc/$pkgname
 }
 
 # vim:set ts=2 sw=2 et:
