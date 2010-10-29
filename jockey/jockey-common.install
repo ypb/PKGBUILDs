@@ -44,16 +44,23 @@ deactivate_daemon() {
 }
 
 post_install() {
-    # TODO: permissions on /var/cache/jockey
+	gtk-update-icon-cache -q -t -f usr/share/icons/hicolor
+	mkdir -p /var/cache/jockey
+    # TODO: permissions on /var/cache/jockey ?!?
     activate_daemon dbus
     # if not running
     . /etc/rc.d/functions
-    ck_daemon dbus && /etc/rc.d/dbus start
+    ck_daemon dbus && /etc/rc.d/dbus start || return 0
 }
 
 post_remove() {
+	gtk-update-icon-cache -q -t -f usr/share/icons/hicolor
     # perhaps some other package "activated" dbus but how would we know not to undo it? /hmmm
     deactivate_daemon dbus
     # TOFIX: is there a fix?
     rm -rf /var/cache/jockey
+}
+
+post_upgrade() {
+	gtk-update-icon-cache -q -t -f usr/share/icons/hicolor
 }

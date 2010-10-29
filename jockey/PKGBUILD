@@ -5,33 +5,54 @@
 pkgbase=jockey
 pkgname=('jockey-common' 'jockey-gtk' 'jockey-kde')
 pkgver=0.5.10
-pkgrel=3
+pkgrel=5
 pkgdesc="Infrastructure and the user interface for finding and installing third-party drivers applicable to the computer"
 url="https://launchpad.net/jockey"
 arch=('any')
 license=('GPL')
-groups=('jockey')
-source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz" "jockey-common.logrotate")
-# depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'polkit-gnome' 'consolekit' 'packagekit=0.6.7-2' 'pygtk' 'python-notify' 'lsb-release' 'kdebindings-python' 'pyqt')
+groups=('jockey' 'ypb')
+source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz" "jockey-common.logrotate" "build_nokdeui.diff")
+sha1sums=('3d03565f7a1e6e36fb9aeb40a27262a843eed43a'
+          '7292f1694d23d716251ef9773b11a63c7fa9886e'
+          '754654c46ae5fe52c86086e754c1c587fadd24ab')
+# depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'polkit-gnome' 'consolekit' 'packagekit' 'pygtk' 'python-notify' 'lsb-release' 'kdebindings-python' 'pyqt')
 makedepends=('python-distutils-extra' 'kdebindings-python' 'pyqt')
 options=(!emptydirs)
 
-sha1sums=('3d03565f7a1e6e36fb9aeb40a27262a843eed43a' '7292f1694d23d716251ef9773b11a63c7fa9886e')
 
 _prefix="/usr"
 _kde_files='bin/*-kde share/applications/*-kde.* share/autostart/*-kde.* lib/python*/*/jockey/kdeui share/kde4'
 _gtk_files='bin/*-gtk share/applications/*-gtk.* share/autostart/*-gtk.* share/jockey/*.ui share/dbus-1/services'
 _common_files='../etc bin/*-text share/dbus-1/system-services share/doc/jockey share/jockey/jockey-backend share/locale share/polkit-1 share/icons lib/python*/*/jockey/*.py* lib/python*/*/*.egg-info'
 
-build() {
-	cd "${srcdir}/${pkgbase}-${pkgver}"
-	# TODO: case on first two with patch not to build kde stuff...
-	python setup.py build || return 1
+_patch() {
+#  echo "running _patch: $pkgname"
+	if [ "$1" == "build" ]; then
+	  if [ "$pkgname" != "jockey-kde" ]; then
+		patch -p1 < ../build_nokdeui.diff
+	  fi
+	elif [ -e setup.cfg ]; then
+		patch -p1 -R -f < ../build_nokdeui.diff || return 0 ;
+	fi
+# jeezus H krayst...
 }
 
-_mkcommon() {
+build() {
 	cd "${srcdir}/${pkgbase}-${pkgver}"
-	python setup.py install --prefix=${_prefix} --root="${pkgdir}" || return 1
+	_patch "build"
+	_fix_pys backend/jockey-backend
+	_build
+}
+
+_build() {
+	python2 setup.py build
+}
+
+_mkinst() {
+#	echo "running _mkinst: $pkgname"
+	cd "${srcdir}/${pkgbase}-${pkgver}"
+	python2 setup.py install --root="${pkgdir}"
+	# --skip-build --prefix=${_prefix}
 }
 
 _clean_out() {
@@ -40,15 +61,27 @@ _clean_out() {
 	done
 }
 
+
+_fix_pys() {
+  if [ $# -gt 0 ] ; then
+	sed -i -e 's|#![ ]*/usr/bin/python$|#!/usr/bin/python2|' \
+	       -e 's|#![ ]*/usr/bin/env python$|#!/usr/bin/env python2|' \
+	$@
+# it's not that easy if them names themselves without extension
+#  $(find $1 -name '*.py')
+  fi
+}
+
 package_jockey-common() {
 	pkgdesc="${pkgdesc}. These are common files required by GTK or KDE version of Jockey"
-	depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'packagekit=0.6.7-2' 'lsb-release')
+	depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'packagekit' 'lsb-release' 'hicolor-icon-theme' 'nvidia-common')
 	install=${pkgbase}-common.install
 	provides=('jockey-common' 'jockey-text')
 
-	_mkcommon || return 1
+	_mkinst
 
 	_clean_out ${_kde_files} ${_gtk_files}
+#	_clean_out ${_gtk_files}
 
 	mkdir -p ${pkgdir}/etc/logrotate.d
 	cp ${srcdir}/jockey-common.logrotate ${pkgdir}/etc/logrotate.d/jockey
@@ -56,22 +89,29 @@ package_jockey-common() {
 
 package_jockey-gtk() {
 	pkgdesc="${pkgdesc}. This is Jockey's GTK frontend"
-	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'pygtk' 'python-notify')
+	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'pygtk' 'python-notify' 'desktop-file-utils')
 	optdepends=('gdm: for "out of the box" polkit-gnome/consolekit handling')
+	install=${pkgbase}.install
 	provides=('jockey' 'jockey-gtk')
 
-	_mkcommon || return 1
+	_mkinst
 
 	_clean_out ${_kde_files} ${_common_files}
+#	_clean_out ${_common_files}
 }
 
 package_jockey-kde() {
 	pkgdesc="${pkgdesc}. This is Jockey's KDE frontend"
-	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'kdebindings-python' 'pyqt')
+	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'kdebindings-python' 'pyqt' 'desktop-file-utils')
 	optdepends=('gdm: for "out of the box" polkit-gnome/consolekit handling')
+	install=${pkgbase}.install
 	provides=('jockey' 'jockey-kde')
 
-	_mkcommon || return 1
+	# bleh...
+	cd "${srcdir}/${pkgbase}-${pkgver}"
+	_patch "back"
+	# _build # it's rebuilding on install anyway, bah...
+	_mkinst
 
 	_clean_out ${_gtk_files} ${_common_files}
 }
