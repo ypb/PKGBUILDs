@@ -3,13 +3,15 @@
 
 pkgname=x-kit
 pkgver=0.4.2.2
-pkgrel=2
+pkgrel=3
 pkgdesc="A simple, transparent and easy to extend xorg parser."
 url="http://launchpad.net/xorgparser"
 arch=('any')
 license=('GPL')
 source=("http://launchpad.net/xorgparser/trunk/0.4.2/+download/${pkgname}-${pkgver}.tar.gz")
 depends=('python2')
+makedepends=('python2')
+groups=('ypb')
 
 build() {
 	cd ${srcdir}/xorgparser
