@@ -1,3 +1,4 @@
+# vim:set ts=2 sw=2 et:
 # Maintainer: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
 
 _deb_96=nvidia-96-modaliases_96.43.18-0ubuntu1_i386.deb
@@ -6,7 +7,7 @@ _deb_260=nvidia-current-modaliases_260.19.06-0ubuntu1_i386.deb
 
 pkgname=nvidia-common
 pkgver=0.2.24
-pkgrel=4
+pkgrel=5
 pkgdesc="Arch port of Ubuntu python utilities and files used to discover nvidia hardware/drivers"
 arch=('any')
 url="https://launchpad.net/nvidia-common"
@@ -25,11 +26,8 @@ changelog=
 source=("http://archive.ubuntu.com/ubuntu/pool/main/n/${pkgname}/${pkgname}_${pkgver}.tar.gz"
          http://archive.ubuntu.com/ubuntu/pool/main/n/nvidia-graphics-drivers-96/${_deb_96}
          http://archive.ubuntu.com/ubuntu/pool/main/n/nvidia-graphics-drivers-173/${_deb_173}
-         http://archive.ubuntu.com/ubuntu/pool/main/n/nvidia-graphics-drivers/${_deb_260})
-md5sums=('1f3ef18c24fb4eba0f78c6b028db4032'
-         '66da505a43b328f95ce4d8a09c4009ec'
-         '73b044e1a4ac44dbb7c3ad794a3f1464'
-         '594df65880ebc47b512dc9c57a4ffeb2')
+         http://archive.ubuntu.com/ubuntu/pool/main/n/nvidia-graphics-drivers/${_deb_260}
+         nvidia-common-meta.diff)
 noextract=(${_deb_96} ${_deb_173} ${_deb_260})
 
 _prefix="/usr"
@@ -37,6 +35,7 @@ _prefix="/usr"
 build() {
   cd "$srcdir/$pkgname-$pkgver"
 
+  patch -p1 < ../nvidia-common-meta.diff
   python2 setup.py build
 }
 
@@ -58,4 +57,8 @@ package() {
   mv usr/share/doc/nvidia*modaliases usr/share/doc/$pkgname
 }
 
-# vim:set ts=2 sw=2 et:
+md5sums=('1f3ef18c24fb4eba0f78c6b028db4032'
+         '66da505a43b328f95ce4d8a09c4009ec'
+         '73b044e1a4ac44dbb7c3ad794a3f1464'
+         '594df65880ebc47b512dc9c57a4ffeb2'
+         '1ba204f24f4e8ecd3c6d5208e53e26b2')
