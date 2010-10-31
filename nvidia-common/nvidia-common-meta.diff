@@ -1,0 +1,110 @@
+diff --git a/NvidiaDetector/meta.py b/NvidiaDetector/meta.py
+new file mode 100644
+index 0000000..2204403
+--- /dev/null
++++ b/NvidiaDetector/meta.py
+@@ -0,0 +1,62 @@
++
++_driver0 = [  96, ['96xx', '96']]
++_driver1 = [ 173, ['173xx', '173']]
++_driver2 = [ 256, ['', '256', 'current']]
++
++_drivers = [_driver0, _driver1, _driver2]
++
++_modules = [[  96, ['96']], [ 173, ['173']], [ 256, ['current']]]
++
++class meta():
++  def __init__(self, name, db, sep = "-"):
++	self.category = name
++	self.db = db
++        self.sep = sep
++
++  def eqc2aliases(self, num):
++	for v in self.db:
++	  if v[0] == num:
++		return v[1]
++	return None
++
++  def alias2eqc(self, name):
++	for v in self.db:
++	  if name in v[1]:
++		return v[0]
++	return None
++
++# supername... rest is "ignored"
++  def name(self, smth):
++	if type(0) == type(smth):
++          affix = self.eqc2aliases(smth)
++	  affix = affix and affix[0]
++	elif type("") == type(smth):
++	  affix = self.alias2eqc(smth)
++	else:
++	  affix = None
++	if affix == None:
++	  return None
++        elif affix == '':
++          return self.category
++	else:
++	  return self.sep.join([self.category, str(affix)])
++
++class driver(meta):
++  def __init__(self, name):
++    meta.__init__(self, name, _drivers)
++
++class module(meta):
++  def __init__(self, name):
++    meta.__init__(self, name, _modules, "_")
++
++# tests
++
++if __name__ == "__main__":
++  pkg=driver("nvidia")
++  print(not pkg.name(96) == "nvidia-96")
++  print(not pkg.name(255) == "nvidia-")
++  print(pkg.name('') == "nvidia-256")
++  print(not pkg.name("176xx") == "nvidia-96")
++  print(pkg.name("96") == "nvidia-96")
++  print(pkg.alias2eqc("current") == 256)
++  print(module("nvidia").name(256) == "nvidia_current")
+diff --git a/NvidiaDetector/nvidiadetector.py b/NvidiaDetector/nvidiadetector.py
+index 1100726..11b97cd 100644
+--- a/NvidiaDetector/nvidiadetector.py
++++ b/NvidiaDetector/nvidiadetector.py
+@@ -24,6 +24,8 @@ import subprocess
+ from subprocess import Popen, PIPE
+ import sys, logging
+ 
++import meta
++
+ aliasesPath = '/usr/share/jockey/modaliases/'
+ obsoletePackagesPath = '/usr/share/nvidia-common/obsolete'
+ 
+@@ -64,6 +66,7 @@ class NvidiaDetection(object):
+         self.printonly = printonly
+         self.verbose = verbose
+         self.oldPackages = self.getObsoletePackages(obsolete)
++        self.metapkg = meta.driver("nvidia")
+         '''
+         If the modaliases path does not exist
+         print none, so that debconf is not triggered.
+@@ -171,7 +174,7 @@ class NvidiaDetection(object):
+                     fullname = 'nvidia-%s' % drivername.strip()
+                     
+                     if id1 in ['10de', '12d2'] and fullname not in self.oldPackages:#if NVIDIA
+-                        driver_value = self.__get_value_from_name(drivername)
++                        driver_value = self.metapkg.alias2eqc(drivername)
+                         if driver_value != None:
+                             self.drivers.setdefault(driver_value, []).append(id1 + ':' + id2)
+                         else:
+@@ -331,9 +334,9 @@ class NvidiaDetection(object):
+             '''
+             FIXME: we should use a metapackage for this
+             '''
+-            driver_name = self.__get_name_from_value(choice)
++            driver_name = self.metapkg.name(choice)
+             if driver_name != None:
+-                choice = 'nvidia-' + str(driver_name)
++                choice = str(driver_name)
+             else:
+                 choice = 'nvidia-' + str(choice)
+         else:
