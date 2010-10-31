@@ -1,0 +1,264 @@
+diff --git a/data/handlers/nvidia.py b/data/handlers/nvidia.py
+new file mode 100644
+index 0000000..0050d66
+--- /dev/null
++++ b/data/handlers/nvidia.py
+@@ -0,0 +1,189 @@
++# (c) 2008 Canonical Ltd.
++# Authors: Martin Pitt <martin.pitt@ubuntu.com>
++#          Alberto Milone <alberto.milone@canonical.com>
++# License: GPL v2 or later
++
++import logging, os
++
++from jockey.handlers import KernelModuleHandler
++from jockey.xorg_driver import XorgDriverHandler
++from jockey.oslib import OSLib
++import XKit
++from NvidiaDetector.nvidiadetector import NvidiaDetection
++from NvidiaDetector.alternatives import Alternatives
++from NvidiaDetector import meta
++import subprocess
++
++Driver = meta.driver("nvidia")
++Module = meta.module("nvidia")
++
++# dummy stub for xgettext
++def _(x): return x
++
++class NvidiaDriverBase(XorgDriverHandler):
++    '''Abstract base class for a particular NVidia driver version.'''
++
++    def __init__(self, backend, kernel_mod, driver_pkg):
++        self._free = False
++        XorgDriverHandler.__init__(self, backend, kernel_mod, 
++            driver_pkg,
++            'nvidia', 'nv', {'NoLogo': 'True'},
++            add_modules=['glx'], disable_modules=[],
++            remove_modules=['dri', 'GLcore'],
++            name=_('NVIDIA accelerated graphics driver'),
++            description=_('3D-accelerated proprietary graphics driver for '
++                'NVIDIA cards.'),
++            rationale=_('This driver is required to fully utilise '
++                'the 3D potential of NVIDIA graphics cards, as well as provide '
++                '2D acceleration of newer cards.\n\n'
++                'If you wish to enable desktop effects, this driver is '
++                'required.\n\n'
++                'If this driver is not enabled, you will not be able to '
++                'enable desktop effects and will not be able to run software '
++                'that requires 3D acceleration, such as some games.'))
++
++        self._module_alias = 'nvidia'
++        self._recommended = None
++        self._do_rebind = False
++        self._alternatives = Alternatives('gl_conf')
++        self.version = str(Driver.alias2eqc(driver_pkg))
++        
++    def enable_config_hook(self):
++        # set DefaultDepth to 24; X.org does not work otherwise
++        if len(self.xorg_conf.globaldict['Screen']) == 0:
++            screen = self.xorg_conf.makeSection('Screen', identifier='Default Screen')
++        
++        self.xorg_conf.addOption('Screen', 'DefaultDepth', '24', position=0, prefix='')
++
++        # version 96 needs AddARGBGLXVisuals
++        if self.version == '96':
++            self.xorg_conf.addOption('Screen', 'AddARGBGLXVisuals', 'True', optiontype='Option', position=0)
++
++        # temporary hack to make "current" work with the xserver ABI
++        #if self.version == 'current':
++        #    if len(self.xorg_conf.globaldict['ServerFlags']) == 0:
++        #        self.xorg_conf.makeSection('ServerFlags')
++        #
++        #    self.xorg_conf.addOption('ServerFlags', 'IgnoreABI', 'True', optiontype='Option', position=0)
++
++        # make sure that RGB path is not in the xorg.conf otherwise xorg will crash
++        it = 0
++        for section in self.xorg_conf.globaldict['Files']:
++            try:
++                self.xorg_conf.removeOption('Files', 'RgbPath', position=it)
++            except (XKit.xorgparser.OptionException):
++                pass
++            it += 1
++        
++        # remove any Disable "dri2" otherwise nvidia-settings and nvidia-xconfig will fail
++        module_sections = self.xorg_conf.globaldict['Module']
++        have_modules = len(module_sections) > 0
++        
++        if have_modules:
++            for section in module_sections:
++                self.xorg_conf.removeOption('Module', 'Disable', value='dri2', position=section)
++
++    def enable(self):
++        # Ensure that the necessary kernel headers need to be installed
++        kernel_headers = 'linux-headers-' + os.uname()[2]
++        try:
++            self.backend.install_package(kernel_headers)
++        except ValueError:
++            # package not available; most likely we have a custom kernel?
++            pass
++
++        XorgDriverHandler.enable(self)
++        
++        # Set the alternative to NVIDIA
++        nvidia_alternative = self._alternatives.get_alternative_by_name(self.package)
++        self._alternatives.set_alternative(nvidia_alternative)
++        subprocess.call(['update-initramfs', '-u'])
++        subprocess.call(['update-initramfs', '-u', '-k', os.uname()[2]])
++ 
++    def disable(self):
++        # make sure that nvidia-VER-kernel-source is removed too
++        XorgDriverHandler.disable(self)
++        if self.package:
++#            flavour = self.package.split('-')[-1]#e.g. 177
++#            kernel_source = 'nvidia-%s-kernel-source' % (flavour)
++#            self.backend.remove_package(kernel_source)
++#            if int(flavour) >= 180:
++#                self.backend.remove_package('nvidia-%s-libvdpau' % flavour)
++            try:
++                self.backend.remove_package('nvidia-settings')
++            except SystemError:
++                pass
++        
++        # Set the alternative back to open drivers
++        open_drivers = self._alternatives.get_open_drivers_alternative()
++        self._alternatives.set_alternative(open_drivers)
++        subprocess.call(['update-initramfs', '-u'])       
++        subprocess.call(['update-initramfs', '-u', '-k', os.uname()[2]])
++
++        return False
++    
++    def recommended(self):
++        if self._recommended == None:
++            nd = NvidiaDetection()
++            self._recommended = self.package == nd.selectDriver()
++        return self._recommended
++
++    def enabled(self):
++        # See if nvidia (e.g. nvidia-current) is the current alternative
++        target_alternative = self._alternatives.get_alternative_by_name(self.package)
++        current_alternative = self._alternatives.get_current_alternative()
++        
++        if current_alternative != target_alternative:
++            logging.debug('%s is not the alternative in use', self.module)
++            return False
++        
++        #if self.xorg_conf has NoneType, AttributeError will be raised
++        if self.xorg_conf:
++            if self.xorg_conf.isDriverEnabled(self.xorg_driver) == False:
++                logging.debug('%s the driver is not enabled in all of the relevant device sections', self.module)
++                return False
++        else:
++            logging.debug('%s: xkit object does not exist!', self.module)
++            return False
++        
++        # Make sure that neither the alias nor the actual module are blacklisted
++        return not OSLib.inst.module_blacklisted(self._module_alias) and \
++               not OSLib.inst.module_blacklisted(self.module)
++
++        #return KernelModuleHandler.enabled(self)
++
++    def used(self):
++        '''Return if the handler is currently in use.'''
++
++        if self.changed() and self.enabled():
++            return False
++        
++        # See if "nvidia" is loaded and if the alias corresponds to nvidia_$flavour
++        return KernelModuleHandler.module_loaded(self._module_alias) and \
++               self._alternatives.resolve_module_alias(self._module_alias) == self.module and \
++               self.package is None or OSLib.inst.package_installed(self.package)
++
++    def enables_composite(self):
++        '''Return whether this driver supports the composite extension.'''
++
++        # When using an upstream installation, or -new/-legacy etc., we already
++        # have composite
++        if KernelModuleHandler.module_loaded('nvidia'):
++            logging.debug('enables_composite(): already using nvidia driver from nondefault package')
++            return False
++
++        # neither vesa nor nv support composite, so safe to say yes here
++        return True
++
++class NvidiaDriverCurrent(NvidiaDriverBase):
++    def __init__(self, backend):
++        NvidiaDriverBase.__init__(self, backend, Module.name(256), Driver.name(256))
++
++class NvidiaDriver173(NvidiaDriverBase):
++    def __init__(self, backend):
++        NvidiaDriverBase.__init__(self, backend, Module.name(173), Driver.name(173))
++
++class NvidiaDriver96(NvidiaDriverBase):
++    def __init__(self, backend):
++        # raise SystemError, 'does not currently work with xserver 1.9'
++        NvidiaDriverBase.__init__(self, backend, Module.name(96), Driver.name(96))
+diff --git a/jockey/detection.py b/jockey/detection.py
+index 24ba00a..ad43548 100644
+--- a/jockey/detection.py
++++ b/jockey/detection.py
+@@ -31,6 +31,9 @@ from glob import glob
+ from oslib import OSLib
+ import handlers, xorg_driver
+ 
++from NvidiaDetector import meta
++Driver = meta.driver("nvidia")
++
+ #--------------------------------------------------------------------#
+ 
+ class HardwareID:
+@@ -293,7 +296,7 @@ class LocalKernelModulesDriverDB(DriverDB):
+                         vp = self.vendor_pattern_re.match(a)
+                         if vp:
+                             self.alias_cache.setdefault(vp.group(1), {}).setdefault(
+-                                vp.group(2), {}).setdefault(a, []).append((m, p))
++                                vp.group(2), {}).setdefault(a, []).append((m, Driver.name(Driver.alias2eqc(p))))
+                         else:
+                             colon = a.find(':')
+                             if colon > 0:
+@@ -301,7 +304,7 @@ class LocalKernelModulesDriverDB(DriverDB):
+                             else:
+                                 bus = None
+                             self.alias_cache.setdefault(bus, {}).setdefault(
+-                                None, {}).setdefault(a, []).append((m, p))
++                                None, {}).setdefault(a, []).append((m, Driver.name(Driver.alias2eqc(p))))
+                     elif c == 'reset':
+                         for map in self.alias_cache.itervalues():
+                             for vmap in map.itervalues():
+diff --git a/jockey/oslib.py b/jockey/oslib.py
+index 0d24ff1..428311d 100644
+--- a/jockey/oslib.py
++++ b/jockey/oslib.py
+@@ -105,10 +105,17 @@ class OSLib:
+     def package_installed(self, package):
+         '''Return if the given package is installed.'''
+ 
+-        pkcon = subprocess.Popen(['pkcon', 'resolve', package],
+-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
++        pkcon = subprocess.Popen(['pkcon', '--filter=installed',
++    	    'resolve', package], stdout=subprocess.PIPE,
++    	    stderr=subprocess.PIPE)
+         out = pkcon.communicate()[0]
+-        return pkcon.returncode == 0 and '\ninstalled ' in out.lower()
++        m = re.search("^Installed\s*" + package + ".*$", out, re.M | re.S)
++        logging.debug("Package: %s, pkcon.ins: %s", package, out)
++        if m:
++    	    return True
++    	else:
++    	    return False
++#        return pkcon.returncode == 0 and '\ninstalled ' in out.lower()
+ 
+     def package_description(self, package):
+         '''Return a tuple (short_description, long_description) for a package.
+@@ -120,8 +127,10 @@ class OSLib:
+             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+         # we send an "1" to select package if several versions 
+         # are available (--filter is broken in at least Fedora 10)
+-        out = pkcon.communicate('1\n')[0]
++        # out = pkcon.communicate('1\n')[0]
++        out = pkcon.communicate()[0]
+         m = re.search("^\s*description:\s*'?(.*?)'?$", out, re.M | re.S)
++        logging.debug("Package: %s, pkcon.des: %s", package, out)
+         if m:
+             # TODO: short description (not accessible with pkcon)
+             return (package, m.group(1))

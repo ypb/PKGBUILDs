@@ -5,16 +5,13 @@
 pkgbase=jockey
 pkgname=('jockey-common' 'jockey-gtk' 'jockey-kde')
 pkgver=0.5.10
-pkgrel=5
+pkgrel=6
 pkgdesc="Infrastructure and the user interface for finding and installing third-party drivers applicable to the computer"
 url="https://launchpad.net/jockey"
 arch=('any')
 license=('GPL')
 groups=('jockey' 'ypb')
-source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz" "jockey-common.logrotate" "build_nokdeui.diff")
-sha1sums=('3d03565f7a1e6e36fb9aeb40a27262a843eed43a'
-          '7292f1694d23d716251ef9773b11a63c7fa9886e'
-          '754654c46ae5fe52c86086e754c1c587fadd24ab')
+source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz" "jockey-common.logrotate" "build_nokdeui.diff" "arch-5e1c51dff9-detect-driver.diff")
 # depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'polkit-gnome' 'consolekit' 'packagekit' 'pygtk' 'python-notify' 'lsb-release' 'kdebindings-python' 'pyqt')
 makedepends=('python-distutils-extra' 'kdebindings-python' 'pyqt')
 options=(!emptydirs)
@@ -23,7 +20,11 @@ options=(!emptydirs)
 _prefix="/usr"
 _kde_files='bin/*-kde share/applications/*-kde.* share/autostart/*-kde.* lib/python*/*/jockey/kdeui share/kde4'
 _gtk_files='bin/*-gtk share/applications/*-gtk.* share/autostart/*-gtk.* share/jockey/*.ui share/dbus-1/services'
-_common_files='../etc bin/*-text share/dbus-1/system-services share/doc/jockey share/jockey/jockey-backend share/locale share/polkit-1 share/icons lib/python*/*/jockey/*.py* lib/python*/*/*.egg-info'
+_common_files='../etc bin/*-text share/dbus-1/system-services share/doc/jockey share/jockey/jockey-backend share/jockey/handlers share/locale share/polkit-1 share/icons lib/python*/*/jockey/*.py* lib/python*/*/*.egg-info'
+
+_patch_all() {
+	patch -p1 < ../arch-5e1c51dff9-detect-driver.diff
+}
 
 _patch() {
 #  echo "running _patch: $pkgname"
@@ -39,6 +40,7 @@ _patch() {
 
 build() {
 	cd "${srcdir}/${pkgbase}-${pkgver}"
+	_patch_all
 	_patch "build"
 	_fix_pys backend/jockey-backend
 	_build
@@ -115,3 +117,8 @@ package_jockey-kde() {
 
 	_clean_out ${_gtk_files} ${_common_files}
 }
+
+sha1sums=('3d03565f7a1e6e36fb9aeb40a27262a843eed43a'
+          '7292f1694d23d716251ef9773b11a63c7fa9886e'
+          '754654c46ae5fe52c86086e754c1c587fadd24ab'
+          '9bc4d77ad48646bd3be4a9458273796368a530e6')
