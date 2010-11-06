@@ -44,6 +44,7 @@ deactivate_daemon() {
 }
 
 post_install() {
+	# xdg-icon-resource forceupdate --theme hicolor
 	gtk-update-icon-cache -q -t -f usr/share/icons/hicolor
 	mkdir -p /var/cache/jockey
     # TODO: permissions on /var/cache/jockey ?!?

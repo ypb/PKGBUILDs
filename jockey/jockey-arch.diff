@@ -1,9 +1,9 @@
 diff --git a/data/handlers/nvidia.py b/data/handlers/nvidia.py
 new file mode 100644
-index 0000000..0050d66
+index 0000000..457e8cd
 --- /dev/null
 +++ b/data/handlers/nvidia.py
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,186 @@
 +# (c) 2008 Canonical Ltd.
 +# Authors: Martin Pitt <martin.pitt@ubuntu.com>
 +#          Alberto Milone <alberto.milone@canonical.com>
@@ -17,11 +17,8 @@ index 0000000..0050d66
 +import XKit
 +from NvidiaDetector.nvidiadetector import NvidiaDetection
 +from NvidiaDetector.alternatives import Alternatives
-+from NvidiaDetector import meta
++from NvidiaDetector.meta import mpkg
 +import subprocess
-+
-+Driver = meta.driver("nvidia")
-+Module = meta.module("nvidia")
 +
 +# dummy stub for xgettext
 +def _(x): return x
@@ -29,10 +26,10 @@ index 0000000..0050d66
 +class NvidiaDriverBase(XorgDriverHandler):
 +    '''Abstract base class for a particular NVidia driver version.'''
 +
-+    def __init__(self, backend, kernel_mod, driver_pkg):
++    def __init__(self, backend, metapackage):
 +        self._free = False
-+        XorgDriverHandler.__init__(self, backend, kernel_mod, 
-+            driver_pkg,
++        XorgDriverHandler.__init__(self, backend, metapackage.module(), 
++            metapackage.driver(),
 +            'nvidia', 'nv', {'NoLogo': 'True'},
 +            add_modules=['glx'], disable_modules=[],
 +            remove_modules=['dri', 'GLcore'],
@@ -52,7 +49,7 @@ index 0000000..0050d66
 +        self._recommended = None
 +        self._do_rebind = False
 +        self._alternatives = Alternatives('gl_conf')
-+        self.version = str(Driver.alias2eqc(driver_pkg))
++        self.version = metapackage.version()
 +        
 +    def enable_config_hook(self):
 +        # set DefaultDepth to 24; X.org does not work otherwise
@@ -183,48 +180,16 @@ index 0000000..0050d66
 +
 +class NvidiaDriverCurrent(NvidiaDriverBase):
 +    def __init__(self, backend):
-+        NvidiaDriverBase.__init__(self, backend, Module.name(256), Driver.name(256))
++        NvidiaDriverBase.__init__(self, backend, mpkg("nvidia", "current"))
 +
 +class NvidiaDriver173(NvidiaDriverBase):
 +    def __init__(self, backend):
-+        NvidiaDriverBase.__init__(self, backend, Module.name(173), Driver.name(173))
++        NvidiaDriverBase.__init__(self, backend, mpkg("nvidia", "173"))
 +
 +class NvidiaDriver96(NvidiaDriverBase):
 +    def __init__(self, backend):
 +        # raise SystemError, 'does not currently work with xserver 1.9'
-+        NvidiaDriverBase.__init__(self, backend, Module.name(96), Driver.name(96))
-diff --git a/jockey/detection.py b/jockey/detection.py
-index 24ba00a..ad43548 100644
---- a/jockey/detection.py
-+++ b/jockey/detection.py
-@@ -31,6 +31,9 @@ from glob import glob
- from oslib import OSLib
- import handlers, xorg_driver
- 
-+from NvidiaDetector import meta
-+Driver = meta.driver("nvidia")
-+
- #--------------------------------------------------------------------#
- 
- class HardwareID:
-@@ -293,7 +296,7 @@ class LocalKernelModulesDriverDB(DriverDB):
-                         vp = self.vendor_pattern_re.match(a)
-                         if vp:
-                             self.alias_cache.setdefault(vp.group(1), {}).setdefault(
--                                vp.group(2), {}).setdefault(a, []).append((m, p))
-+                                vp.group(2), {}).setdefault(a, []).append((m, Driver.name(Driver.alias2eqc(p))))
-                         else:
-                             colon = a.find(':')
-                             if colon > 0:
-@@ -301,7 +304,7 @@ class LocalKernelModulesDriverDB(DriverDB):
-                             else:
-                                 bus = None
-                             self.alias_cache.setdefault(bus, {}).setdefault(
--                                None, {}).setdefault(a, []).append((m, p))
-+                                None, {}).setdefault(a, []).append((m, Driver.name(Driver.alias2eqc(p))))
-                     elif c == 'reset':
-                         for map in self.alias_cache.itervalues():
-                             for vmap in map.itervalues():
++        NvidiaDriverBase.__init__(self, backend, mpkg("nvidia", "96"))
 diff --git a/jockey/oslib.py b/jockey/oslib.py
 index 0d24ff1..428311d 100644
 --- a/jockey/oslib.py
