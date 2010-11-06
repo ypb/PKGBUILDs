@@ -1,17 +1,35 @@
 diff --git a/NvidiaDetector/meta.py b/NvidiaDetector/meta.py
 new file mode 100644
-index 0000000..2204403
+index 0000000..badfa59
 --- /dev/null
 +++ b/NvidiaDetector/meta.py
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,80 @@
 +
 +_driver0 = [  96, ['96xx', '96']]
 +_driver1 = [ 173, ['173xx', '173']]
-+_driver2 = [ 256, ['', '256', 'current']]
++_driver2 = [ 260, ['', '260', 'current']]
 +
 +_drivers = [_driver0, _driver1, _driver2]
 +
-+_modules = [[  96, ['96']], [ 173, ['173']], [ 256, ['current']]]
++_modules = [[  96, ['96']], [ 173, ['173']], [ 260, ['current']]]
++
++class mpkg():
++  def __init__(self, name, version):
++    self._base_name = name
++    self._base_version = version
++    self._mdriver = driver(name)
++    self._mmodule = module(name)
++    self._num_version = self._mdriver.alias2eqc(version)
++
++  def driver(self):
++    return self._mdriver.name(self._num_version)
++
++  def module(self):
++    return self._mmodule.name(self._num_version)
++
++  def version(self):
++    return str(self._num_version)
++
 +
 +class meta():
 +  def __init__(self, name, db, sep = "-"):
@@ -67,7 +85,7 @@ index 0000000..2204403
 +  print(pkg.alias2eqc("current") == 256)
 +  print(module("nvidia").name(256) == "nvidia_current")
 diff --git a/NvidiaDetector/nvidiadetector.py b/NvidiaDetector/nvidiadetector.py
-index 1100726..11b97cd 100644
+index 1100726..cab884c 100644
 --- a/NvidiaDetector/nvidiadetector.py
 +++ b/NvidiaDetector/nvidiadetector.py
 @@ -24,6 +24,8 @@ import subprocess
@@ -87,7 +105,22 @@ index 1100726..11b97cd 100644
          '''
          If the modaliases path does not exist
          print none, so that debconf is not triggered.
-@@ -171,7 +174,7 @@ class NvidiaDetection(object):
+@@ -149,7 +152,7 @@ class NvidiaDetection(object):
+         for file in files:
+             a = open(self.datadir + file, 'r')
+             lines = a.readlines()
+-            indentifier = re.compile('.*alias pci:v0000(.+)d0000(.+)sv.*nvidia.*nvidia-(.+).*')
++            indentifier = re.compile('.*alias pci:v0000(.+)d0000(.+)sv.*nvidia.*nvidia(.*)')
+             legacy_indentifier = re.compile('.*alias pci:v0000(.+)d0000(.+)sv.*nvidia.*nvidia-glx-(.+).*')
+             for line in lines:
+                 m1 = legacy_indentifier.match(line)
+@@ -166,12 +169,12 @@ class NvidiaDetection(object):
+                 elif m2:
+                     id1 = m2.group(1).strip().lower()#e.g. 10de or 12d2 for nvidia
+                     id2 = m2.group(2).strip().lower()#the id which is specific to the model
+-                    drivername = m2.group(3).strip().lower()#e.g. current, 173, or 96
++                    drivername = m2.group(3).strip().lstrip("-").lower()#e.g. current, 173, or 96
+                     
                      fullname = 'nvidia-%s' % drivername.strip()
                      
                      if id1 in ['10de', '12d2'] and fullname not in self.oldPackages:#if NVIDIA

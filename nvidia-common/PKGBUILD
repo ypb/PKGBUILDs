@@ -7,7 +7,7 @@ _deb_260=nvidia-current-modaliases_260.19.06-0ubuntu1_i386.deb
 
 pkgname=nvidia-common
 pkgver=0.2.24
-pkgrel=5
+pkgrel=6
 pkgdesc="Arch port of Ubuntu python utilities and files used to discover nvidia hardware/drivers"
 arch=('any')
 url="https://launchpad.net/nvidia-common"
@@ -50,6 +50,12 @@ package() {
     bsdtar -xf $srcdir/$f -O data.tar.gz | tar xzf -
   done
 
+  # fix those damn package names!
+  # TODO: all data in one var array!?!
+  sed -i 's/ nvidia-96$/ nvidia-96xx/g' usr/share/jockey/modaliases/nvidia-96
+  sed -i 's/ nvidia-173$/ nvidia-173xx/g' usr/share/jockey/modaliases/nvidia-173
+  sed -i 's/ nvidia-current$/ nvidia/g' usr/share/jockey/modaliases/nvidia-current
+
   rm -rf usr/lib/nvidia
   rm -rf etc
 
@@ -61,4 +67,4 @@ md5sums=('1f3ef18c24fb4eba0f78c6b028db4032'
          '66da505a43b328f95ce4d8a09c4009ec'
          '73b044e1a4ac44dbb7c3ad794a3f1464'
          '594df65880ebc47b512dc9c57a4ffeb2'
-         '1ba204f24f4e8ecd3c6d5208e53e26b2')
+         '624369704d8ad99de9c7b0cf2947e690')
