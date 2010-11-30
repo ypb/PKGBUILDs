@@ -1,21 +1,21 @@
 # Contributor: onestep_ua <onestep@ukr.net>
 
 pkgname=packagekit
-pkgver=0.6.9
+pkgver=0.6.10
 pkgrel=1
 pkgdesc="A system designed to make installing and updating software on your computer easier"
 arch=('i686' 'x86_64')
 url="http://packagekit.org/"
 license=('GPL')
-depends=('dbus-glib>=0.86' 'polkit>=0.98' 'networkmanager>=0.8.1' 'pacman>=3.4.1' 'libtar' 'python>=2.6.5' 'sqlite3')
-makedepends=('intltool' 'pm-utils' 'pacman-glib>=3.4.0' 'qt>=4.7.0' 'gobject-introspection>=0.9.10')
+depends=('dbus-glib>=0.92' 'polkit>=0.98' 'networkmanager>=0.8.2-3' 'pacman>=3.4.1' 'libtar' 'python2>=2.7' 'sqlite3')
+makedepends=('intltool' 'pm-utils' 'pacman-glib>=3.4.0' 'qt>=4.7.1' 'gobject-introspection>=0.9.12')
 optdepends=('pacman-glib: for pacman backend' 'qt: for Qt bindings')
 conflicts=('libpackagekit-qt')
 provides=('libpackagekit-qt')
 replaces=('libpackagekit-qt')
 options=('!libtool')
 source=(http://www.packagekit.org/releases/PackageKit-${pkgver}.tar.bz2)
-md5sums=('9f112e43fdba9e4382c27ee2a2d363c3')
+md5sums=('dd1417c09a437ec99cb62af52214856c')
 
 build() {
   cd "${srcdir}/PackageKit-${pkgver}"
@@ -23,14 +23,13 @@ build() {
   # disable building of test backend
   sed -i 's/SUBDIRS = test/SUBDIRS =/' backends/Makefile.in
 
-  ./configure --prefix=/usr \
+  PYTHON=python2 ./configure --prefix=/usr \
       --sysconfdir=/etc \
       --localstatedir=/var \
       --libexecdir=/usr/lib/PackageKit \
       --disable-static \
       --disable-gtk-doc \
       --enable-qt \
-      --disable-managed \
       --disable-tests \
       --disable-local \
       --disable-browser-plugin \

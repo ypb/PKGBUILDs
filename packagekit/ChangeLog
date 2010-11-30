@@ -1,3 +1,10 @@
+2010-11-30 Valeriy Lyasotskiy <onestep@ukr.net>
+
+	* 0.6.10-1 :
+	new upstream release
+	python is now python2
+	set latest dependencies versions
+
 2010-10-07 Valeriy Lyasotskiy <onestep@ukr.net>
 
 	* 0.6.9-1 :
