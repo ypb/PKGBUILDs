@@ -1,3 +1,17 @@
+2010-10-07 Valeriy Lyasotskiy <onestep@ukr.net>
+
+	* 0.6.9-1 :
+	new upstream release
+	enabled build of Qt bindings
+	removed obsolete gir-repository make dependency
+	set latest dependencies versions
+
+2010-09-16 Valeriy Lyasotskiy <onestep@ukr.net>
+
+	* 0.6.8-1 :
+	new upstream release
+	set latest dependencies versions
+
 2010-08-05 Valeriy Lyasotskiy <onestep@ukr.net>
 
 	* 0.6.7-2 :
