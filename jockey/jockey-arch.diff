@@ -1,9 +1,9 @@
 diff --git a/data/handlers/nvidia.py b/data/handlers/nvidia.py
 new file mode 100644
-index 0000000..457e8cd
+index 0000000..bed0f3e
 --- /dev/null
 +++ b/data/handlers/nvidia.py
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,185 @@
 +# (c) 2008 Canonical Ltd.
 +# Authors: Martin Pitt <martin.pitt@ubuntu.com>
 +#          Alberto Milone <alberto.milone@canonical.com>
@@ -88,20 +88,19 @@ index 0000000..457e8cd
 +
 +    def enable(self):
 +        # Ensure that the necessary kernel headers need to be installed
-+        kernel_headers = 'linux-headers-' + os.uname()[2]
-+        try:
-+            self.backend.install_package(kernel_headers)
-+        except ValueError:
++        # kernel_headers = 'linux-headers-' + os.uname()[2]
++        # try:
++        #     self.backend.install_package(kernel_headers)
++        # except ValueError:
 +            # package not available; most likely we have a custom kernel?
-+            pass
-+
++        #     pass
 +        XorgDriverHandler.enable(self)
 +        
 +        # Set the alternative to NVIDIA
-+        nvidia_alternative = self._alternatives.get_alternative_by_name(self.package)
-+        self._alternatives.set_alternative(nvidia_alternative)
-+        subprocess.call(['update-initramfs', '-u'])
-+        subprocess.call(['update-initramfs', '-u', '-k', os.uname()[2]])
++        # nvidia_alternative = self._alternatives.get_alternative_by_name(self.package)
++        # self._alternatives.set_alternative(nvidia_alternative)
++        # subprocess.call(['update-initramfs', '-u'])
++        # subprocess.call(['update-initramfs', '-u', '-k', os.uname()[2]])
 + 
 +    def disable(self):
 +        # make sure that nvidia-VER-kernel-source is removed too
@@ -191,7 +190,7 @@ index 0000000..457e8cd
 +        # raise SystemError, 'does not currently work with xserver 1.9'
 +        NvidiaDriverBase.__init__(self, backend, mpkg("nvidia", "96"))
 diff --git a/jockey/oslib.py b/jockey/oslib.py
-index 0d24ff1..428311d 100644
+index 0d24ff1..b6d3bf7 100644
 --- a/jockey/oslib.py
 +++ b/jockey/oslib.py
 @@ -105,10 +105,17 @@ class OSLib:
@@ -227,3 +226,12 @@ index 0d24ff1..428311d 100644
          if m:
              # TODO: short description (not accessible with pkcon)
              return (package, m.group(1))
+@@ -159,7 +168,7 @@ class OSLib:
+ 
+         Any installation failure should be raised as a SystemError.
+         '''
+-        pkcon = subprocess.Popen(['pkcon', 'install', '-v', package],
++        pkcon = subprocess.Popen(['pkcon', 'install', '-v', '-y', package],
+             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+ 
+         re_progress = re.compile('progress-changed (\d+), (\d+),')

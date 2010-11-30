@@ -5,7 +5,7 @@
 pkgbase=jockey
 pkgname=('jockey-common' 'jockey-gtk' 'jockey-kde')
 pkgver=0.5.10
-pkgrel=7
+pkgrel=8
 pkgdesc="Infrastructure and the user interface for finding and installing third-party drivers applicable to the computer"
 url="https://launchpad.net/jockey"
 arch=('any')
@@ -121,4 +121,4 @@ package_jockey-kde() {
 sha1sums=('3d03565f7a1e6e36fb9aeb40a27262a843eed43a'
           '7292f1694d23d716251ef9773b11a63c7fa9886e'
           '754654c46ae5fe52c86086e754c1c587fadd24ab'
-          'ed6a174e65da0ffdf22df0cb3b2edb1af53b63ec')
+          '108a2b9f5f3a91a104d388a9974896cff9bb9384')
