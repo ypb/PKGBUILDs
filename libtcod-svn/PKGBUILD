@@ -1,39 +1,52 @@
 # Maintainer: Kevin Whitaker <eyecreate at gmail dot com>
 
 pkgname=libtcod-svn
-pkgver=451
+pkgver=521
 pkgrel=1
-pkgdesc="Rougelike graphics/utility library"
+pkgdesc="Roguelike graphics/utility library"
 arch=('i686' 'x86_64')
 url="http://doryen.eptalys.net/libtcod/"
 license=('BSD')
 depends=('libpng' 'sdl' 'zlib' 'libgl')
-makedepends=('subversion')
-source=()
-md5sums=()
-
+makedepends=('cmake' 'subversion' 'upx')
+conflicts=('libtcod')
+provides=('libtcod')
+source=('png.patch'
+	'hmtool.patch')
+md5sums=('fd3417b535ad0dbf91eeffd42202b81e'
+         '767ad604ee99dee7949aabc6c0754587')
 _svntrunk=http://doryen.eptalys.net/svn-libtcod/trunk
 _svnmod=libtcod
-
 
 build() {
   cd $srcdir  
   if [ -d $_svnmod/.svn ]; then
-    (cd $_svnmod && svn up -r $pkgver)
+    (cd $_svnmod && svn up)
   else
-    svn co $_svntrunk --config-dir ./ -r $pkgver $_svnmod
+    svn co $_svntrunk --config-dir ./ $_svnmod
   fi
-  cd $_svnmod
-#  sed -i '33d' $srcdir/$_svnmod/src/sys_sdl_img_png.c
-#  sed -i '35d' $srcdir/$_svnmod/src/sys_sdl_img_png.c
-if [ "${CARCH}" = "x86_64" ]; then
-  make -f makefiles/makefile-linux64 || return 1
-elif [ "${CARCH}" = "i686" ]; then
-  make -f makefiles/makefile-linux ||return 1
-fi
+
+  rm -fr $_svnmod-build
+  cp -r $_svnmod $_svnmod-build
+  cd $_svnmod-build
+  patch -p0 < ../hmtool.patch || return 1
+  patch -p0 < ../png.patch || return 1
+  cmake . || return 1
+  #cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$pkgdir/usr/ ||return 1
+  make || return 1
+  #make install || return 1
+#if [ "${CARCH}" = "x86_64" ]; then
+  #make -f makefiles/makefile-linux64 || return 1
+#elif [ "${CARCH}" = "i686" ]; then
+  #make -f makefiles/makefile-linux ||return 1
+#fi
+}
+package() {
+  cd $_svnmod-build
   mkdir -p $pkgdir/usr/lib ||return 1
   mkdir -p $pkgdir/usr/include/libtcod ||return 1
-  cp $srcdir/$_svnmod/{libtcodgui.so,libtcodxx.so,libtcod.so} $pkgdir/usr/lib ||return 1
-  cp -r $srcdir/$_svnmod/include/* $pkgdir/usr/include/libtcod ||return 1
-#  rm -r $srcdir/$_svnmod/src/sys_sdl_img_png.c ||return 1
+  #mkdir -p $pkgdir/usr/share/libtcod ||return 1
+  install -m 644 $srcdir/$_svnmod-build/src/{libtcod-gui.so,libtcodxx.so,libtcod.so} $pkgdir/usr/lib ||return 1
+  cp -r $srcdir/$_svnmod-build/include/* $pkgdir/usr/include/libtcod ||return 1
+  #install -m 755 $srcdir/$_svnmod-build/samples/{samples_c,samples_cpp,hmtool/hmtool} $pkgdir/usr/share/libtcod ||return 1
 }
