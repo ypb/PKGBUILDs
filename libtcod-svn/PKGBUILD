@@ -1,7 +1,7 @@
 # Maintainer: Kevin Whitaker <eyecreate at gmail dot com>
 
 pkgname=libtcod-svn
-pkgver=430
+pkgver=451
 pkgrel=1
 pkgdesc="Rougelike graphics/utility library"
 arch=('i686' 'x86_64')
@@ -24,16 +24,16 @@ build() {
     svn co $_svntrunk --config-dir ./ -r $pkgver $_svnmod
   fi
   cd $_svnmod
-  sed -i '33d' $srcdir/$_svnmod/src/sys_sdl_img_png.c
-  sed -i '35d' $srcdir/$_svnmod/src/sys_sdl_img_png.c
+#  sed -i '33d' $srcdir/$_svnmod/src/sys_sdl_img_png.c
+#  sed -i '35d' $srcdir/$_svnmod/src/sys_sdl_img_png.c
 if [ "${CARCH}" = "x86_64" ]; then
   make -f makefiles/makefile-linux64 || return 1
-elif ["${CARCH}" = "i686"]; then
+elif [ "${CARCH}" = "i686" ]; then
   make -f makefiles/makefile-linux ||return 1
 fi
   mkdir -p $pkgdir/usr/lib ||return 1
   mkdir -p $pkgdir/usr/include/libtcod ||return 1
   cp $srcdir/$_svnmod/{libtcodgui.so,libtcodxx.so,libtcod.so} $pkgdir/usr/lib ||return 1
   cp -r $srcdir/$_svnmod/include/* $pkgdir/usr/include/libtcod ||return 1
-  rm -r $srcdir/$_svnmod/src/sys_sdl_img_png.c ||return 1
+#  rm -r $srcdir/$_svnmod/src/sys_sdl_img_png.c ||return 1
 }
