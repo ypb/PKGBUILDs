@@ -1,44 +1,52 @@
 # Maintainer: Kevin Whitaker <eyecreate at gmail dot com>
+# Contributor: Michal Kowalski <kowalski.michal@gmail.com>
 
 pkgname=goblincamp-hg	
-pkgver=123
-pkgrel=1
-pkgdesc="Goblin rougelike/builder inspired by dwarffortress"
+pkgver=1029
+pkgrel=3
+pkgdesc="Goblin roguelike/citybuilder inspired by Dwarffortress"
 arch=('i686' 'x86_64')
-url="https://bitbucket.org/ktvoelker/goblin-camp-linux"
+url="http://www.goblincamp.com/"
 license=('GPL')
-depends=('ticpp-svn' 'libtcod-svn' 'boost' 'mercurial')
-makedepends=('subversion')
-source=(goblincamp.desktop goblincamp.sh goblincamp.png)
-md5sums=('792366700f75c46ebeb2d3da18212cee'
-         '76680e91742713ee933effa8a8123a63'
-         'a531e29c24395df730ba2277a7a4c212')
+depends=('libtcod-svn=494' 'boost>=1.44.0' 'python2')
+makedepends=('mercurial')
+source=(goblincamp.desktop goblincamp.png gc-config.jam patch.patch)
 
-
-_hgroot="http://bitbucket.org/ktvoelker"
-_hgrepo="goblin-camp-linux"
-
+_hgroot="http://bitbucket.org/genericcontainer"
+_hgrepo="goblin-camp"
 
 build() {
-  msg "Connecting to $_hgroot"
-    if [ -d $_hgrepo ]; then
-        cd $_hgrepo
-        hg pull -u || return 1
-        msg2 "Finished updating the local repository!"
-    else
-        hg clone ${_hgroot}/${_hgrepo} "${srcdir}/${_hgrepo}" || return 1
-        msg2 "Initial pull complete!"
-    fi
-  cd "${srcdir}/${_hgrepo}/Goblin Camp"
-  patch < $srcdir/../Makefile.patch ||return 1
-  make || return 1
-  mkdir -p $pkgdir/usr/{bin,share/{applications,pixmaps}} ||return 1
-  mkdir -p $pkgdir/opt/goblincamp ||return 1
-  install -m644 $srcdir/../goblincamp.desktop $pkgdir/usr/share/applications/goblincamp.desktop ||return 1
-  install -m644 $srcdir/../goblincamp.png $pkgdir/usr/share/pixmaps/goblincamp.png ||return 1
-  install -m755 "${srcdir}/${_hgrepo}/Goblin Camp/goblin-camp" $pkgdir/opt/goblincamp/goblin-camp ||return 1
-  install -m644 "${srcdir}/${_hgrepo}/Goblin Camp/terminal.png" $pkgdir/opt/goblincamp/terminal.png ||return 1
-  install -m755 "${srcdir}/../goblincamp.sh" $pkgdir/usr/bin/goblincamp.sh ||return 1
-  cp ${srcdir}/${_hgrepo}/Goblin\ Camp/*.xml $pkgdir/opt/goblincamp ||return 1
-  cp ${srcdir}/${_hgrepo}/Goblin\ Camp/*.dat $pkgdir/opt/goblincamp ||return 1
+  cd "$srcdir"
+  msg "Connecting to Mercurial server $_hgroot"
+  if [ -d $_hgrepo ]; then
+    cd $_hgrepo
+    hg pull -u || return 1
+    msg "Finished updating the local repository!"
+  else
+    hg clone ${_hgroot} ${_hgrepo} || return 1
+    msg "Initial pull complete!"
+  fi
+
+  rm -rf "$srcdir/$_hgrepo-build"
+  cp -r "$srcdir/$_hgrepo" "$srcdir/$_hgrepo-build"
+  cd "$srcdir/$_hgrepo-build"
+
+  patch -p1 < ../patch.patch
+  cp ../gc-config.jam .
+  bjam --user-config=gc-config.jam variant=release dist
 }
+
+package() {
+  cd "$srcdir/$_hgrepo-build"
+
+  mkdir -p $pkgdir/usr/{bin,share/{applications,pixmaps}}
+  install -m644 $srcdir/goblincamp.desktop $pkgdir/usr/share/applications/goblin-camp.desktop
+  install -m644 $srcdir/goblincamp.png $pkgdir/usr/share/pixmaps/goblin-camp.png
+  install -m755 build/dist/release*/bin/goblin-camp $pkgdir/usr/bin/goblin-camp
+  cp -r build/dist/release*/share/goblin-camp* $pkgdir/usr/share
+}
+
+md5sums=('14e3dec2ad719325f3117eace8e11595'
+         'a531e29c24395df730ba2277a7a4c212'
+         '813f44ec1b0996e94267f35199ec85a0'
+         '7a0676b04a43b1a64e1853e1622a041e')

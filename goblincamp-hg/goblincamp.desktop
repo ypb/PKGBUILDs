@@ -2,9 +2,9 @@
 Encoding=UTF-8
 Name=Goblin Camp
 GenericName=Goblin Camp
-Comment=Rougelike/Citybuilder
-Exec=/usr/bin/goblincamp.sh
-Icon=/usr/share/pixmaps/goblincamp.png
+Comment=Roguelike/Citybuilder
+Exec=/usr/bin/goblin-camp
+Icon=/usr/share/pixmaps/goblin-camp.png
 StartupNotify=true
 Terminal=false
 Type=Application
