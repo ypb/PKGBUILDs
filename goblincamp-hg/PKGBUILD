@@ -1,0 +1,44 @@
+# Maintainer: Kevin Whitaker <eyecreate at gmail dot com>
+
+pkgname=goblincamp-hg	
+pkgver=123
+pkgrel=1
+pkgdesc="Goblin rougelike/builder inspired by dwarffortress"
+arch=('i686' 'x86_64')
+url="https://bitbucket.org/ktvoelker/goblin-camp-linux"
+license=('GPL')
+depends=('ticpp-svn' 'libtcod-svn' 'boost')
+makedepends=('subversion')
+source=(goblincamp.desktop goblincamp.sh goblincamp.png)
+md5sums=('792366700f75c46ebeb2d3da18212cee'
+         '76680e91742713ee933effa8a8123a63'
+         'a531e29c24395df730ba2277a7a4c212')
+
+
+_hgroot="http://bitbucket.org/ktvoelker"
+_hgrepo="goblin-camp-linux"
+
+
+build() {
+  msg "Connecting to $_hgroot"
+    if [ -d $_hgrepo ]; then
+        cd $_hgrepo
+        hg pull -u || return 1
+        msg2 "Finished updating the local repository!"
+    else
+        hg clone ${_hgroot}/${_hgrepo} "${srcdir}/${_hgrepo}" || return 1
+        msg2 "Initial pull complete!"
+    fi
+  cd "${srcdir}/${_hgrepo}/Goblin Camp"
+  patch < $srcdir/../Makefile.patch ||return 1
+  make || return 1
+  mkdir -p $pkgdir/usr/{bin,share/{applications,pixmaps}} ||return 1
+  mkdir -p $pkgdir/opt/goblincamp ||return 1
+  install -m644 $srcdir/../goblincamp.desktop $pkgdir/usr/share/applications/goblincamp.desktop ||return 1
+  install -m644 $srcdir/../goblincamp.png $pkgdir/usr/share/pixmaps/goblincamp.png ||return 1
+  install -m755 "${srcdir}/${_hgrepo}/Goblin Camp/goblin-camp" $pkgdir/opt/goblincamp/goblin-camp ||return 1
+  install -m644 "${srcdir}/${_hgrepo}/Goblin Camp/terminal.png" $pkgdir/opt/goblincamp/terminal.png ||return 1
+  install -m755 "${srcdir}/../goblincamp.sh" $pkgdir/usr/bin/goblincamp.sh ||return 1
+  cp ${srcdir}/${_hgrepo}/Goblin\ Camp/*.xml $pkgdir/opt/goblincamp ||return 1
+  cp ${srcdir}/${_hgrepo}/Goblin\ Camp/*.dat $pkgdir/opt/goblincamp ||return 1
+}
