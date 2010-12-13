@@ -1,0 +1,39 @@
+# vim:set ts=2 sw=2 et:
+# Maintainer: Michal Kowalski <kowalski.michal@gmail.com>
+
+_name=curry
+pkgname=mcc
+pkgver=0.9.11
+pkgrel=1
+pkgdesc="The Münster Curry Compiler"
+arch=('i686')
+url="http://danae.uni-muenster.de/~lux/curry/"
+license=('GPL')
+groups=()
+depends=('gcc')
+makedepends=('nhc98')
+optdepends=()
+provides=('curry')
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=(http://danae.uni-muenster.de/~lux/curry/download/${_name}-$pkgver/${_name}-$pkgver.tar.gz)
+noextract=()
+
+build() {
+  cd "$srcdir/${_name}-$pkgver"
+
+  ./configure --prefix=/usr --mandir=/usr/share/man --with-hc=nhc98 --disable-debug --enable-cam2c --enable-mach
+  make
+}
+
+package() {
+  cd "$srcdir/${_name}-$pkgver"
+
+  make DESTDIR="$pkgdir/" install
+}
+
+md5sums=('70c9b8bf97198324a5da71164532ff9a')
