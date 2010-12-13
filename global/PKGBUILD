@@ -5,7 +5,7 @@
 
 pkgname=global
 pkgver=5.9.2
-pkgrel=1
+pkgrel=2
 pkgdesc="A source code tag system"
 arch=(i686 x86_64)
 url="http://www.gnu.org/software/global/"
@@ -49,4 +49,4 @@ package() {
 
 md5sums=('93bd5be29ca2b989f71c12f302bb9e39'
          'c6b102c9e0b14d631fd8f7231842f65b'
-         '2203b405acb2089d096c0c0ad2fc233c')
+         '0e63787c990e5f01605c552c57acc164')
