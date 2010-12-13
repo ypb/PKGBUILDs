@@ -2,26 +2,36 @@
 # Maintainer: Todd Musall <tmusall@comcast.net>
 # Contributor: Todd Musall <tmusall@comcast.net>
 # Maintainer: tardo <tardo@nagi-fanboi.net>
+# Contributor: Michal Kowalski <kowalski.michal@gmail.com>
 
 pkgname=idutils
-pkgver=4.2
+pkgver=4.5
 pkgrel=1
 pkgdesc="A package of language independent tools that indexes program identifiers, literal numbers, \
 	or words of human-readable text."
 arch=('i686' 'x86_64')
 url="http://www.gnu.org/directory/GNU/idutils.html"
 license=('GPL')
+groups=('ypb')
 depends=('bash')
 replaces=('id-utils')
 source=(ftp://ftp.gnu.org/gnu/idutils/idutils-$pkgver.tar.gz)
-md5sums=('4bbd2cb0d566ab29e41088cc028ad710')
 
 build() {
-  cd $startdir/src/$pkgname-$pkgver
+  cd $srcdir/$pkgname-$pkgver
+
   ./configure --prefix=/usr
-  make VERBOSE=1 || return 1
-  make DESTDIR=$startdir/pkg install
+  make VERBOSE=1
+}
+
+package() {
+  cd $srcdir/$pkgname-$pkgver
+
+  make DESTDIR=$pkgdir install
+
   # why was this necessary?
   #mkdir -p $startdir/pkg/usr/share/misc
   #mv $startdir/pkg/usr/share/id-lang.map $startdir/pkg/usr/share/misc/
 }
+
+md5sums=('6c5082ee7f70578bb35d4b6669d9e14c')
