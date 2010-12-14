@@ -1,5 +1,13 @@
-Well, the submodules idea didn't work...
-...will try combine history with remotes...
-on different branches being equivalent to repos
-that way... and, hmmm, uhm...
-master branch being for not PKGBUILD files like AMI.
+Well, the submodules idea didn't work... because I ain't gonna be
+polluting my github with every little directory I track using git.
+And so I combined them via local remotes... and track them as
+individual branches being equivalent to repos; as in:
+
+  aur        are some PKGBUILDs that I track from "AUR repo"
+  aur-ypb    are my forks of the above
+  community  like aur... you get the idea?
+
+  ypb        are PKGBUILDs that originate purely locally, i.e.
+             for some reason I wrote them from scratch
+
+master branch being for not PKGBUILD files like AMI...
