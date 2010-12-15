@@ -1,0 +1,44 @@
+# then please put 'unknown'.
+# vim:set ts=2 sw=2 et:
+# Maintainer: Your Name <youremail@domain.com>
+
+pkgname=achilles
+pkgver=2
+pkgrel=1
+pkgdesc="A trivial evolution simulation based on Larry Yaeger's PolyWorld idea"
+arch=('i686')
+#url="http://achilles.sourceforge.net/"
+url="http://packages.debian.org/search?keywords=achilles"
+license=('GPL2')
+groups=('ypb')
+depends=('libgl' 'sdl' 'libpng' 'zlib')
+makedepends=()
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+#source=(http://downloads.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.gz)
+source=(http://ftp.debian.org/debian/pool/main/a/achilles/achilles_2.orig.tar.gz
+        http://ftp.debian.org/debian/pool/main/a/achilles/achilles_2-8.diff.gz)
+noextract=()
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  gunzip -c ../achilles_2-8.diff.gz | patch -p1
+  ./configure --prefix=/usr
+  make
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  make DESTDIR="$pkgdir/" install
+}
+
+md5sums=('4514b3f93b8bf790738822da3a0f37de'
+         'a74f6bfefcacd10b7b70f7d23487dc16')
