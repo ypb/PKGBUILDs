@@ -1,5 +1,16 @@
 post_install() {
-cat >&2 << _EOF
+	post_upgrade
+
+	cat >&2 <<EOF
+	You need to install one of the following programs to be able to set a background image.
+		esetroot habak feh hsetroot chbg fvwm-root display
+		qiv xv xsri xli xsetbg wmsetbg xsetroot
+
+EOF
+}
+
+post_upgrade() {
+	cat >&2 <<EOF
 
 ==> awesome installation notes:
     ----------------------------------------
@@ -7,9 +18,5 @@ cat >&2 << _EOF
     This means that your configuration file (~/.config/awesome/rc.lua) for 
     any other than this particular version of awesome may or may not work.
     
-_EOF
-}
-
-post_upgrade() {
-	post_install
+EOF
 }
