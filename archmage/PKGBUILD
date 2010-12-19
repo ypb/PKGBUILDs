@@ -3,12 +3,13 @@
 
 pkgname=archmage
 pkgver=0.2.4
-pkgrel=1
+pkgrel=2
 pkgdesc="An extensible reader and decompiler for files in the CHM format"
 arch=('any')
 url="http://archmage.sourceforge.net/"
 license=('GPL')
 depends=('python-pychm' 'beautiful-soup')
+groups=('ypb')
 optdepends=('lynx: for converting html to plain text'
             'elinks: for converting html to plain text'
             'htmldoc: for converting to single html and pdf formats'
@@ -19,5 +20,5 @@ md5sums=('d03f8b7cb9fae2b55572ada86c6e895c')
 
 build() {
   cd "$srcdir"/$pkgname-$pkgver
-  python setup.py install --root="$pkgdir" || return 1
+  python2 setup.py install --root="$pkgdir" || return 1
 }
