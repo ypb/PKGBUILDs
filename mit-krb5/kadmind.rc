@@ -4,37 +4,42 @@
 . /etc/rc.conf
 . /etc/rc.d/functions
 
-PID=`pidof -o %PPID /opt/mit-krb5/bin/kadmind`
+kname=@NAME@
+kpath=@PREFIX@/sbin
+
+PID=`pidof -o %PPID $kpath/kadmind`
+
 case "$1" in
     start)
-        stat_busy "Starting mit-krb5 admin server"
+        stat_busy "Starting $kname admin server"
         if [ -z "$PID" ]; then
-		/opt/mit-krb5/bin/kadmind
+            $kpath/kadmind
         fi
         if [ ! -z "$PID" -o $? -gt 0 ]; then
             stat_fail
         else
-            add_daemon kadmind
+            add_daemon $kname-kadmind
             stat_done
         fi
         ;;
     stop)
-        stat_busy "Stopping mit-krb5 admin server"
-	    [ ! -z "$PID" ] && kill $PID &> /dev/null
+        stat_busy "Stopping $kname admin server"
+        [ ! -z "$PID" ] && kill $PID &> /dev/null
         if [ $? -gt 0 ]; then
             stat_fail
         else
-            rm_daemon kadmind
+            rm_daemon $kname-kadmind
             stat_done
         fi
         ;;
     restart)
         $0 stop
-	sleep 1
+        sleep 1
         $0 start
         ;;
     *)
         echo "usage: $0 {start|stop|restart}"
 	;;
 esac
+
 exit 0

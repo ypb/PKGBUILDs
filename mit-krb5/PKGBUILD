@@ -1,37 +1,58 @@
-pkgname=mit-krb5
+pkgname=krb5-mit
+_krb=${pkgname%-mit}
+_prefix=/opt/${pkgname}
+_confdir=/etc/${pkgname}
 pkgver=1.8.3
 pkgrel=1
-pkgdesc="MIT Kerberos V"
+pkgdesc="MIT Kerberos Version 5"
 arch=('i686' 'x86_64')
-url='http://web.mit.edu/kerberos/www/'
-license=('as-is')
+url="http://web.mit.edu/kerberos/"
+license=('MIT' 'custom: multiple copyright holders')
 provides=('kerberos')
-backup=('etc/mit-krb5/krb5.conf' 'etc/mit-krb5/kdc.conf')
-depends=('glibc' 'tcp_wrappers' 'e2fsprogs' 'db' 'openssl' 'bison')
-source=("http://web.mit.edu/kerberos/dist/krb5/1.8/krb5-${pkgver}-signed.tar" kadmind.rc kdc.rc)
+#backup=("${confdir}/krb5.conf" "${confdir}/kdc.conf")
+# not sure about those wrappers...
+depends=('glibc' 'tcp_wrappers' 'e2fsprogs' 'db' 'openssl' 'initscripts')
+source=("http://web.mit.edu/kerberos/dist/${_krb}/1.8/${_krb}-${pkgver}-signed.tar"
+        kadmind.rc kdc.rc)
 md5sums=('7c5f38e31ee744cb538eed2301096b93'
-         '653720c7e15e6d07dd105929ab59bbef'
-         'cafcc7ee341e60777da601f31352e84b')
-                  
+         '5220dc32df6afa0880a3e7495601cfa1'
+         '6a247844926efbaded1bcd9fa5ce14ce')
+
 build() {
-    cd ${startdir}/src
-    tar --no-same-owner -xzf krb5-${pkgver}.tar.gz || return 1
-    cd ${startdir}/src/krb5-${pkgver}/src
-    ./configure --prefix=/opt/mit-krb5 --enable-shared --enable-dns-for-realm --enable-kdc-replay-cache \
-	--localstatedir=/opt/mit-krb5/var --sysconfdir=/etc/mit-krb5 --bindir=/opt/mit-krb5 \
-	--sbindir=/opt/mit-krb5 --with-system-ss \
-	|| return 1
-    make -j1 || return 1
-    make DESTDIR=${startdir}/pkg install || return 1
+    cd ${srcdir}/
+    tar -xzf ${_krb}-${pkgver}.tar.gz
+    cd ${srcdir}/${_krb}-${pkgver}/src/
+    ./configure --prefix=${_prefix} --sysconfdir=${_confdir} \
+      --enable-dns-for-realm --with-system-et --with-system-ss
+#      --enable-shared
+#      --enable-kdc-replay-cache
+    make CFLAGS=-I/usr/include/et
+}
+
+_helpersed() {
+    sed "s|@NAME@|${pkgname}|g;\
+         s|@PREFIX@|${_prefix}|g" $1 > $1.$2
+}
+
+package() {
+    cd ${srcdir}/${_krb}-${pkgver}/src/
+    make DESTDIR=${pkgdir} install
+
     #rm ${startdir}/pkg/usr/bin/compile_et
     #rm ${startdir}/pkg/usr/lib/libcom_err.so
     #rm ${startdir}/pkg/usr/bin/telnet
     #rm ${startdir}/pkg/usr/share/et/et_c.awk
     #rm ${startdir}/pkg/usr/share/et/et_h.awk
-    install -D -m 644 ${startdir}/src/krb5-${pkgver}/src/config-files/kdc.conf ${startdir}/pkg/etc/mit-krb5/kdc.conf || return 1
-    install -D -m 644 ${startdir}/src/krb5-${pkgver}/src/config-files/krb5.conf ${startdir}/pkg/etc/mit-krb5/krb5.conf || return 1
-    install -D -m 755 ${startdir}/src/kdc.rc ${startdir}/pkg/etc/rc.d/mit-krb5kdc || return 1
-    install -D -m 755 ${startdir}/src/kadmind.rc ${startdir}/pkg/etc/rc.d/mit-krb5kadmind || return 1
-    mkdir -p ${startdir}/pkg/opt/mit-krb5/bin
-    ln -s ../krb5-config ${startdir}/pkg/opt/mit-krb5/bin/
+
+    install -D -m 644 ${srcdir}/${_krb}-${pkgver}/src/config-files/kdc.conf ${pkgdir}${_confdir}/kdc.conf.example
+    install -D -m 644 ${srcdir}/${_krb}-${pkgver}/src/config-files/krb5.conf ${pkgdir}${_confdir}/krb5.conf.example
+
+    _helpersed ${srcdir}/kdc.rc out
+    install -D -m 755 ${srcdir}/kdc.rc.out ${pkgdir}/etc/rc.d/${pkgname}-kdc
+    _helpersed ${srcdir}/kadmind.rc out
+    install -D -m 755 ${srcdir}/kadmind.rc.out ${pkgdir}/etc/rc.d/${pkgname}-kadmind
+#    mkdir -p ${startdir}/pkg/opt/mit-krb5/bin
+#    ln -s ../krb5-config ${startdir}/pkg/opt/mit-krb5/bin/
+
+    install -D -m 644 ${srcdir}/${_krb}-${pkgver}/NOTICE ${pkgdir}/usr/share/licenses/${pkgname}/NOTICE
 }
