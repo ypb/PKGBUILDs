@@ -1,0 +1,24 @@
+diff --git a/wscript b/wscript
+index 95c3392..db594fc 100644
+--- a/wscript
++++ b/wscript
+@@ -30,7 +30,7 @@ def configure(context):
+ def build(context):
+ 	# 1. The ckit library
+ 	context(
+-		target = 'libckit',
++		target = 'ckit',
+ 		features = 'cc cshlib',
+ 		source = context.path.ant_glob('libckit/src/*.c'),
+ 		includes = 'libckit/include')
+@@ -41,8 +41,8 @@ def build(context):
+ 		features = 'cc cprogram',
+ 		install_path = '../test',
+ 		source = context.path.ant_glob('test/src/*.c'),
+-		includes = 'test/include',
+-		uselib_local = 'libckit')
++		includes = 'test/include libckit/include',
++		uselib_local = 'ckit')
+ 
+ 	# 3. The pkg-config file
+ 	obj = context.new_task_gen('subst')

@@ -1,0 +1,59 @@
+# Maintainer: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
+
+pkgname=ckit-git
+pkgver=20110105
+pkgrel=1
+pkgdesc="Small C library providing commonly needed data structures and functionality"
+arch=('i686')
+url="http://gitorious.org/ckit"
+license=('MIT')
+groups=('ypb')
+depends=()
+makedepends=('git' 'python2')
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+source=(fix-wscript.diff)
+noextract=()
+
+_gitroot="git://gitorious.org/ckit/mainline.git"
+_gitname="ckit"
+
+_prefix=/usr
+
+build() {
+  cd "$srcdir"
+  msg "Connecting to GIT server...."
+
+  if [ -d $_gitname ] ; then
+    cd $_gitname && git pull origin
+    msg "The local files are updated."
+  else
+    git clone $_gitroot $_gitname
+  fi
+
+  msg "GIT checkout done or server timeout"
+  msg "Starting make..."
+
+  rm -rf "$srcdir/$_gitname-build"
+  git clone "$srcdir/$_gitname" "$srcdir/$_gitname-build"
+  cd "$srcdir/$_gitname-build"
+
+  patch -p1 < ../fix-wscript.diff
+  python2 waf configure --prefix=${_prefix} && \
+    python2 waf build
+}
+
+package() {
+  cd "$srcdir/$_gitname-build"
+  python2 waf --destdir="$pkgdir/" install
+#  mkdir -p "$pkgdir/${_prefix}/include"
+  cp -r libckit/include "$pkgdir/${_prefix}"
+  mkdir -p $pkgdir/usr/share/licenses/${_gitname}
+  cp LICENSE $pkgdir/usr/share/licenses/${_gitname}
+}
+
+md5sums=('522931da621758a9cfa8f1edd82491b7')
