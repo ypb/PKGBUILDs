@@ -2,14 +2,14 @@
 
 pkgname=ckit-git
 pkgver=20110105
-pkgrel=1
+pkgrel=2
 pkgdesc="Small C library providing commonly needed data structures and functionality"
 arch=('i686')
 url="http://gitorious.org/ckit"
 license=('MIT')
 groups=('ypb')
 depends=()
-makedepends=('git' 'python2')
+makedepends=('git' 'python2' 'python-sphinx')
 provides=()
 conflicts=()
 replaces=()
@@ -45,6 +45,7 @@ build() {
   patch -p1 < ../fix-wscript.diff
   python2 waf configure --prefix=${_prefix} && \
     python2 waf build
+  cd doc && make html
 }
 
 package() {
@@ -52,6 +53,8 @@ package() {
   python2 waf --destdir="$pkgdir/" install
 #  mkdir -p "$pkgdir/${_prefix}/include"
   cp -r libckit/include "$pkgdir/${_prefix}"
+  mkdir -p "$pkgdir/${_prefix}/share/doc/${_gitname}"
+  cp -r doc/build/html "$pkgdir/${_prefix}/share/doc/${_gitname}"
   mkdir -p $pkgdir/usr/share/licenses/${_gitname}
   cp LICENSE $pkgdir/usr/share/licenses/${_gitname}
 }
