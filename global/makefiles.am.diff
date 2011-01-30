@@ -1,15 +1,3 @@
-diff -ruN global-5.9.2,0/htags/Makefile.am global-5.9.2,1/htags/Makefile.am
---- global-5.9.2,0/htags/Makefile.am	2010-08-30 14:19:04.000000000 +0200
-+++ global-5.9.2,1/htags/Makefile.am	2010-10-31 05:04:46.000000000 +0100
-@@ -33,7 +33,7 @@
- EXTRA_DIST = $(man_MANS) $(gtags_DATA) manual.in global.cgi.tmpl.in completion.cgi.tmpl.in \
- 		const.h c.l cpp.l java.l php.l asm.l
- install-data-hook:
--	dir="$(localstatedir)/gtags/sitekeys"; \
-+	dir="$(DESTDIR)$(localstatedir)/gtags/sitekeys"; \
- 	if [ ! -d $$dir ]; then \
- 		$(MKDIR_P) $$dir; \
- 		chmod 755 $$dir; \
 diff -ruN global-5.9.2,0/Makefile.am global-5.9.2,1/Makefile.am
 --- global-5.9.2,0/Makefile.am	2010-08-30 14:19:04.000000000 +0200
 +++ global-5.9.2,1/Makefile.am	2010-10-31 05:13:16.000000000 +0100

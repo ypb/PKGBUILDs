@@ -1,10 +1,10 @@
 # Author: timlee <tl1234562004.at.yahoo.com>
 # Contributor: Philipp Robbel <robbel@gmail.com>
-# Contributor: Michal Kowalski <kowalski.michal@gmail.com>
+# Contributor: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
 #
 
 pkgname=global
-pkgver=5.9.2
+pkgver=5.9.3
 pkgrel=2
 pkgdesc="A source code tag system"
 arch=(i686 x86_64)
@@ -47,6 +47,6 @@ package() {
 	#==> WARNING: Package contains reference to $srcdir
 }
 
-md5sums=('93bd5be29ca2b989f71c12f302bb9e39'
+md5sums=('2c07f065f3e37c6333569f3af1fbbe5d'
          'c6b102c9e0b14d631fd8f7231842f65b'
-         '0e63787c990e5f01605c552c57acc164')
+         'da518490b909ecb16928dcd7f0bc8154')
