@@ -1,11 +1,11 @@
 # Maintainer: Mark Pustjens <pustjens@dds.nl>
 # Contributor: PirateJonno <j@skurvy.no-ip.org>
-# Contributor: Michal Kowalski <kowalski.michal@gmail.com>
+# Contributor: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
 
 pkgbase=jockey
 pkgname=('jockey-common' 'jockey-gtk' 'jockey-kde')
 pkgver=0.5.10
-pkgrel=8
+pkgrel=9
 pkgdesc="Infrastructure and the user interface for finding and installing third-party drivers applicable to the computer"
 url="https://launchpad.net/jockey"
 arch=('any')
@@ -13,7 +13,7 @@ license=('GPL')
 groups=('jockey' 'ypb')
 source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz" "jockey-common.logrotate" "build_nokdeui.diff" "jockey-arch.diff")
 # depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'polkit-gnome' 'consolekit' 'packagekit' 'pygtk' 'python-notify' 'lsb-release' 'kdebindings-python' 'pyqt')
-makedepends=('python-distutils-extra' 'kdebindings-python' 'pyqt')
+makedepends=('python-distutils-extra' 'kdebindings-python' 'python2-qt')
 options=(!emptydirs)
 
 
@@ -53,7 +53,7 @@ _build() {
 _mkinst() {
 #	echo "running _mkinst: $pkgname"
 	cd "${srcdir}/${pkgbase}-${pkgver}"
-	python2 setup.py install --root="${pkgdir}"
+	python2 setup.py install --root="${pkgdir}/" --optimize=1
 	# --skip-build --prefix=${_prefix}
 }
 
@@ -104,7 +104,7 @@ package_jockey-gtk() {
 
 package_jockey-kde() {
 	pkgdesc="${pkgdesc}. This is Jockey's KDE frontend"
-	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'kdebindings-python' 'pyqt' 'desktop-file-utils')
+	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'kdebindings-python' 'python2-qt' 'desktop-file-utils')
 	optdepends=('gdm: for "out of the box" polkit-gnome/consolekit handling')
 	install=${pkgbase}.install
 	provides=('jockey' 'jockey-kde')
