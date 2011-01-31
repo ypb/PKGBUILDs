@@ -4,22 +4,26 @@
 
 pkgbase=jockey
 pkgname=('jockey-common' 'jockey-gtk' 'jockey-kde')
-pkgver=0.5.10
-pkgrel=9
+pkgver=0.8
+pkgrel=1
 pkgdesc="Infrastructure and the user interface for finding and installing third-party drivers applicable to the computer"
 url="https://launchpad.net/jockey"
 arch=('any')
 license=('GPL')
 groups=('jockey' 'ypb')
 source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz" "jockey-common.logrotate" "build_nokdeui.diff" "jockey-arch.diff")
-# depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'polkit-gnome' 'consolekit' 'packagekit' 'pygtk' 'python-notify' 'lsb-release' 'kdebindings-python' 'pyqt')
-makedepends=('python-distutils-extra' 'kdebindings-python' 'python2-qt')
+sha1sums=('87ebc45cfe138ee717244673d0e6d1b8dcd872c2'
+          '7292f1694d23d716251ef9773b11a63c7fa9886e'
+          '754654c46ae5fe52c86086e754c1c587fadd24ab'
+          '2a949a1306b1101830350da90caccd71628a5263')
+# depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'polkit-gnome' 'consolekit' 'packagekit' 'pygtk' 'python-notify' 'lsb-release' 'kdebindings-python' 'python2-qt')
+makedepends=('python-distutils-extra')
 options=(!emptydirs)
 
 
 _prefix="/usr"
-_kde_files='bin/*-kde share/applications/*-kde.* share/autostart/*-kde.* lib/python*/*/jockey/kdeui share/kde4'
-_gtk_files='bin/*-gtk share/applications/*-gtk.* share/autostart/*-gtk.* share/jockey/*.ui share/dbus-1/services'
+_kde_files='bin/*-kde share/applications/*-kde.* share/autostart/*-kde.* share/jockey/*Dialog.ui share/jockey/*KDE4.ui share/kde4'
+_gtk_files='bin/*-gtk share/applications/*-gtk.* share/autostart/*-gtk.* share/jockey/*-gtk.ui share/dbus-1/services'
 _common_files='../etc bin/*-text share/dbus-1/system-services share/doc/jockey share/jockey/jockey-backend share/jockey/handlers share/locale share/polkit-1 share/icons lib/python*/*/jockey/*.py* lib/python*/*/*.egg-info'
 
 _patch_all() {
@@ -76,7 +80,7 @@ _fix_pys() {
 
 package_jockey-common() {
 	pkgdesc="${pkgdesc}. These are common files required by GTK or KDE version of Jockey"
-	depends=('dbus-python' 'pyxdg' 'x-kit' 'polkit' 'packagekit' 'lsb-release' 'hicolor-icon-theme' 'nvidia-common=0.2.24-6')
+	depends=('dbus-python' 'x-kit' 'polkit' 'packagekit' 'lsb-release>1.4-10' 'hicolor-icon-theme' 'nvidia-common=0.2.24-6')
 	install=${pkgbase}-common.install
 	provides=('jockey-common' 'jockey-text')
 
@@ -104,7 +108,7 @@ package_jockey-gtk() {
 
 package_jockey-kde() {
 	pkgdesc="${pkgdesc}. This is Jockey's KDE frontend"
-	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'kdebindings-python' 'python2-qt' 'desktop-file-utils')
+	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'kdebindings-python' 'desktop-file-utils')
 	optdepends=('gdm: for "out of the box" polkit-gnome/consolekit handling')
 	install=${pkgbase}.install
 	provides=('jockey' 'jockey-kde')
@@ -118,7 +122,3 @@ package_jockey-kde() {
 	_clean_out ${_gtk_files} ${_common_files}
 }
 
-sha1sums=('3d03565f7a1e6e36fb9aeb40a27262a843eed43a'
-          '7292f1694d23d716251ef9773b11a63c7fa9886e'
-          '754654c46ae5fe52c86086e754c1c587fadd24ab'
-          '108a2b9f5f3a91a104d388a9974896cff9bb9384')

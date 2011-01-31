@@ -226,10 +226,10 @@ index 0d24ff1..b6d3bf7 100644
          if m:
              # TODO: short description (not accessible with pkcon)
              return (package, m.group(1))
-@@ -159,7 +168,7 @@ class OSLib:
+@@ -192,7 +201,7 @@
+         # this will check if the package exists
+         self.package_description(package)
  
-         Any installation failure should be raised as a SystemError.
-         '''
 -        pkcon = subprocess.Popen(['pkcon', 'install', '-v', package],
 +        pkcon = subprocess.Popen(['pkcon', 'install', '-v', '-y', package],
              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
