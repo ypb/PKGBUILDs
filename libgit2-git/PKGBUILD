@@ -1,18 +1,27 @@
 # Contributor: Hervé Cauwelier <herve ¤ oursours.net>
+# Contributor: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
 
 pkgname="libgit2-git"
-pkgver=20101125
+pkgver=20110131
 pkgrel=1
-pkgdesc="C git library"
-url="https://github.com/libgit2/libgit2"
-depends=('openssl')
-makedepends=('git' 'openssl')
+pkgdesc="Portable, re-entrant C API library of core Git methods."
+arch=('i686')
+# https://github.com/libgit2/libgit2
+url="http://libgit2.github.com/api.html"
+# http://libgit2.github.com/libgit2/modules.html
+depends=('zlib')
+# waf needs python or s/python2/cmake/
+makedepends=('git' 'python2' 'zlib')
 provides=('libgit2')
 conflicts=('libgit2')
-arch=('any')
-license=('GPL2')
+license=('custom: GPL2')
+groups=('ypb')
 
-_gitroot="https://github.com/libgit2/libgit2.git"
+_pybin=$(which python2)
+
+_rooturn="/github.com/libgit2/libgit2.git"
+#_gitroot="https:/${_rooturn}"
+_gitroot="git:/${_rooturn}"
 _gitname="libgit2"
 
 build() {
@@ -33,10 +42,17 @@ build() {
   git clone "$srcdir/$_gitname" "$srcdir/$_gitname-build"
   cd "$srcdir/$_gitname-build"
 
-  #
   # BUILD HERE
-  #
 
-  ./waf configure --prefix=/usr/||return 1
-  ./waf install --destdir=${pkgdir}||return 1
+  ${_pybin} ./waf configure --prefix=/usr || return 1
+  ${_pybin} ./waf || return 1
 }
+
+package() {
+  cd "$srcdir/$_gitname-build"
+
+  # INSTALL THERE
+
+  ${_pybin} ./waf install --destdir="${pkgdir}/" || return 1
+}
+
