@@ -1,0 +1,88 @@
+# Maintainer: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
+
+_oldname=libnotify
+pkgname=${_oldname}4-git
+_realver=0.7.1
+pkgver=20110205
+pkgrel=0
+pkgdesc="Gnome desktop notification library"
+arch=('i686' 'x86_64')
+url="http://library.gnome.org/devel/libnotify/"
+license=('LGPL2.1')
+groups=('ypb' 'extra')
+depends=()
+# gnome-common: gnome-autogen.sh...
+makedepends=('git' 'gnome-common')
+provides=('${_oldname}=${_realver}')
+conflicts=('${_oldname}')
+replaces=()
+backup=()
+#options=(!libtool)
+install=
+source=()
+md5sums=()
+noextract=()
+#generate with 'makepkg -g'
+
+_gitroot="git://git.gnome.org/libnotify.git"
+_gitname="${_oldname}.origin"
+
+_clone() {
+  cd "$srcdir"
+  msg "Performing initial GIT clone..."
+  if [ -d $_gitname ] ; then
+	msg "Repository $_gitname already exists"
+	return 1
+  else
+    git clone $_gitroot $_gitname
+  fi
+  msg "Cloning done"
+}
+_fetch() {
+  cd "$srcdir"
+  msg "Fetching from GIT server...."
+  if [ -d $_gitname ] ; then
+    cd $_gitname && git pull origin
+    msg "The local files are updated."
+  else
+	_clone
+  fi
+  msg "GIT fetch done or server timeout"
+}
+_dup() {
+  cd "$srcdir"
+  msg "Duplicating clone..."
+
+  if [ ! -d $_gitname ] ; then
+	_clone
+  fi
+  rm -rf "$srcdir/$_gitname-build"
+  git clone "$srcdir/$_gitname" "$srcdir/$_gitname-build"
+
+  msg "Cloning clone done"
+}
+
+build() {
+  cd "$srcdir"
+  msg "Starting make..."
+
+  # _fetch # unhash if you want to git pull always...
+  if [ ! -d $_gitname-build ] ; then
+	_dup
+  fi
+
+  # BUILD HERE
+
+  cd $_gitname-build
+  git checkout ${_realver}
+  ./autogen.sh
+  ./configure --prefix=/usr
+  # --disable-static
+  make
+}
+
+package() {
+  cd "$srcdir/$_gitname-build"
+  make DESTDIR="$pkgdir/" install
+} 
+
