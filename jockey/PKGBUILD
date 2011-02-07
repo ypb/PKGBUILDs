@@ -4,15 +4,15 @@
 
 pkgbase=jockey
 pkgname=('jockey-common' 'jockey-gtk' 'jockey-kde')
-pkgver=0.8
+pkgver=0.9
 pkgrel=1
 pkgdesc="Infrastructure and the user interface for finding and installing third-party drivers applicable to the computer"
 url="https://launchpad.net/jockey"
 arch=('any')
 license=('GPL')
-groups=('jockey' 'ypb')
+groups=('jockey' 'ypb' 'aur-ypb')
 source=("http://launchpad.net/${pkgbase}/trunk/${pkgver}/+download/${pkgbase}-${pkgver}.tar.gz" "jockey-common.logrotate" "build_nokdeui.diff" "jockey-arch.diff")
-sha1sums=('87ebc45cfe138ee717244673d0e6d1b8dcd872c2'
+sha1sums=('ce84935eba0b47adc209f64b429d59ee9301f224'
           '7292f1694d23d716251ef9773b11a63c7fa9886e'
           '754654c46ae5fe52c86086e754c1c587fadd24ab'
           '2a949a1306b1101830350da90caccd71628a5263')
@@ -95,7 +95,7 @@ package_jockey-common() {
 
 package_jockey-gtk() {
 	pkgdesc="${pkgdesc}. This is Jockey's GTK frontend"
-	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'pygtk' 'python-notify' 'desktop-file-utils')
+	depends=('jockey-common='$pkgver-$pkgrel 'polkit-gnome' 'consolekit' 'pygobject' 'libnotify' 'desktop-file-utils')
 	optdepends=('gdm: for "out of the box" polkit-gnome/consolekit handling')
 	install=${pkgbase}.install
 	provides=('jockey' 'jockey-gtk')
