@@ -1,0 +1,43 @@
+diff --git a/Makefile.am b/Makefile.am
+index 41ff37c..0cb761e 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,6 +1,7 @@
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-SUBDIRS = libnotify docs tools tests
++SUBDIRS = libnotify docs tools
++##tests
+ 
+ pcdata_DATA = libnotify.pc
+ pcdatadir = $(libdir)/pkgconfig
+diff --git a/configure.ac b/configure.ac
+index 71609ed..14766a2 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -98,9 +98,9 @@ AC_SUBST(PACKAGE_CFLAGS)
+ AC_SUBST(pkg_modules)
+ 
+ tests_modules="gtk+-3.0 >= $REQ_GTK_VERSION"
+-PKG_CHECK_MODULES(TESTS, [$tests_modules])
+-AC_SUBST(TESTS_LIBS)
+-AC_SUBST(TESTS_CFLAGS)
++#PKG_CHECK_MODULES(TESTS, [$tests_modules])
++#AC_SUBST(TESTS_LIBS)
++#AC_SUBST(TESTS_CFLAGS)
+ 
+ GLIB_GENMARSHAL=`pkg-config --variable=glib_genmarshal glib-2.0`
+ AC_SUBST(GLIB_GENMARSHAL)
+@@ -199,10 +199,11 @@ docs/reference/Makefile
+ libnotify.pc
+ libnotify/Makefile
+ libnotify/notify-features.h
+-tests/Makefile
+ tools/Makefile
+ ])
+ 
++#tests/Makefile
++
+ AC_OUTPUT
+ 
+ echo "

@@ -1,30 +1,38 @@
 # $Id: PKGBUILD 99716 2010-11-16 22:24:02Z ibiru $
 # Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
 
 pkgname=libnotify
 pkgver=0.7.1
-_pkgve=${pkgver%.*}
-pkgrel=1
+_minorver=${pkgver%.*}
+pkgrel=2
 pkgdesc="Gnome desktop notification library"
 arch=('i686' 'x86_64')
 url="http://library.gnome.org/devel/libnotify/"
 license=('LGPL2.1')
 groups=('ypb' 'extra-ypb')
-depends=('dbus-glib>=0.92' 'gtk3>=2.99.2' 'glib')
-makedepends=('gnome-common')
-#provides=('libnotify=${pkgver}')
+depends=('glib2>=2.26.0' 'gdk-pixbuf2' 'libpng>=1.4' 'gobject-introspection>=0.9.12')
+# makedepends=('gtk3>=2.90')
+makedepends=('gnome-common' 'gtk-doc>=1.14')
+# 'xmlto' ...hmmm...
 options=('!libtool')
-source=(http://ftp.gnome.org/pub/GNOME/sources/${pkgname}/${_pkgve}/${pkgname}-${pkgver}.tar.bz2)
-sha256sums=('84dc2a77defb25521d2f1cb7ac34b4d23b55254ba361442658430efb928536c8')
+source=(http://ftp.gnome.org/pub/gnome/sources/${pkgname}/${_minorver}/${pkgname}-${pkgver}.tar.bz2
+        remove-gtk3-tests.diff)
+sha256sums=('84dc2a77defb25521d2f1cb7ac34b4d23b55254ba361442658430efb928536c8'
+            '66dcf0e8b1a5145dd0b8d9a40a8a363905d616f95f91eab5ef3944799463b9c7')
 
 build() {
   cd "${srcdir}/${pkgname}-${pkgver}"
-  PYTHON=/usr/bin/python2 \
-  ./configure --prefix=/usr --disable-static
+
+  patch -p1 < "${srcdir}/remove-gtk3-tests.diff"
+
+#  PYTHON=/usr/bin/python2
+  ./autogen.sh --prefix=/usr --disable-static
   make
 }
 
 package() {
   cd "${srcdir}/${pkgname}-${pkgver}"
+
   make DESTDIR="${pkgdir}" install
 }
