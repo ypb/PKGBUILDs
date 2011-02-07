@@ -2,23 +2,25 @@
 # Adapted from ABS package
 # Maintainer: Jon Nordby <jononor@gmail.com>
 
-_pkgname=pygobject
-pkgname=$_pkgname-git
-pkgver=20101203
+_basename=pygobject
+pkgname=$_basename-git
+pkgver=20110207
+_topver=2.27.0
 pkgrel=1
 pkgdesc="Python bindings for GObject - git version"
 arch=('i686' 'x86_64')
 license=('LGPL')
-depends=('python2' 'glib2>=2.26.0' 'pycairo>=1.8.10' 'gobject-introspection>=0.9.6')
-provides=()
-depends=()
+groups=('ypb' 'extr-ypb' 'aur-ypb')
+depends=('python2' 'glib2>=2.27.5' 'python2-cairo>=1.8.10' 'gobject-introspection>=0.10.2')
+provides=("${_basename}=${_topver}")
+conflicts=("${_basename}")
 options=('!libtool')
-url="http://www.pygtk.org/"
+url="http://live.gnome.org/PyGObject"
 source=(0001-Build-Accept-libtool-2.4-as-well.patch)
 md5sums=('a56989b060909129f1ce71361e5b0e42')
 
 _gitroot="git://git.gnome.org/pygobject"
-_gitname="pygobject"
+_gitname="${_basename}.origin"
 
 build() {
   cd "$srcdir"
@@ -46,9 +48,10 @@ build() {
 }
 
 package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
+  cd "${srcdir}/${_gitname}-build"
   make DESTDIR="${pkgdir}" install
 
   find "$pkgdir"/usr/share/pygobject -name '*.py' | \
     xargs sed -i "s|#![ ]*/usr/bin/env python$|#!/usr/bin/env python2|"
 }
+
