@@ -6,16 +6,16 @@
 
 pkgbase=boost
 pkgname=('boost-libs' 'boost')
-pkgver=1.43.0
-_boostver=1_43_0
-pkgrel=2
+pkgver=1.44.0
+_boostver=1_44_0
+pkgrel=1
 arch=('i686' 'x86_64')
 url="http://www.boost.org/"
 makedepends=('python2' 'bzip2' 'zlib')
-source=(http://downloads.sourceforge.net/sourceforge/${pkgbase}/${pkgbase}_${_boostver}.tar.gz)
+source=(http://downloads.sourceforge.net/sourceforge/${pkgbase}/${pkgbase}_${_boostver}.tar.bz2)
 license=('custom')
 options=('!ccache')
-md5sums=('734565ca4819bf04bd8e903e116c3fb1')
+md5sums=('f02578f5218f217a9f20e9c30e119c6a')
 
 _stagedir="${srcdir}/stagedir"
 
