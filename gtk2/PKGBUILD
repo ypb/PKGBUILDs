@@ -1,9 +1,11 @@
 # $Id: PKGBUILD 99604 2010-11-15 19:29:19Z ibiru $
 # Maintainer: Jan de Groot <jgc@archlinux.org>
 
+_name="gtk+"
 pkgname=gtk2
-pkgver=2.23.90
-pkgrel=0.1
+pkgver=2.24.0
+_minorver=${pkgver%.*}
+pkgrel=1
 pkgdesc="The GTK+ Toolkit (v2)"
 arch=('i686' 'x86_64')
 url="http://www.gtk.org/"
@@ -17,14 +19,15 @@ options=('!libtool' '!docs')
 backup=(etc/gtk-2.0/gtkrc)
 license=('LGPL')
 groups=('ypb' 'extra-ypb')
-source=(http://ftp.gnome.org/pub/gnome/sources/gtk+/2.23/gtk+-${pkgver}.tar.bz2
+source=(http://ftp.gnome.org/pub/gnome/sources/${_name}/${_minorver}/${_name}-${pkgver}.tar.bz2
         xid-collision-debug.patch old-icon-symlinks.patch)
-sha256sums=('cf0138ba26d206cb9fbd7dd771c6ac785aee054364df5abffdd25e10e75b671b'
+sha256sums=('cbed1a7b8cd1e471388a00f22557dd061334698a0c1aece11b7ed6541d115606'
             'd758bb93e59df15a4ea7732cf984d1c3c19dff67c94b957575efea132b8fe558'
             '1298e4103f71d0304378f1e7503011150f6f68398ae8ebae5522a48feaea7c0d')
 
 build() {
-  cd "${srcdir}/gtk+-${pkgver}"
+  cd "${srcdir}/${_name}-${pkgver}"
+
   patch -Np1 -i "${srcdir}/xid-collision-debug.patch"
   patch -Np1 -i "${srcdir}/old-icon-symlinks.patch"
 
@@ -33,9 +36,14 @@ build() {
       --localstatedir=/var \
       --with-xinput=yes
   make
+}
+
+package() {
+  cd "${srcdir}/${_name}-${pkgver}"
+
   make DESTDIR="${pkgdir}" install
 
   sed -i "s#env python#env python2#" $pkgdir/usr/bin/gtk-builder-convert
-
-  echo 'gtk-fallback-icon-theme = "gnome"' > "${pkgdir}/etc/gtk-2.0/gtkrc"
+  echo 'gtk-fallback-icon-theme = "gnome"' >> "${pkgdir}/etc/gtk-2.0/gtkrc"
 }
+
