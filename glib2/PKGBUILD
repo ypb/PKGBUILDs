@@ -1,32 +1,40 @@
 # $Id: PKGBUILD 99447 2010-11-14 19:35:34Z ibiru $
 # Maintainer: Jan de Groot <jgc@archlinux.org>
 
+_name=glib
 pkgname=glib2
-pkgver=2.27.5
-pkgrel=0.1
+pkgver=2.27.93
+_minorver=${pkgver%.*}
+pkgrel=1
 pkgdesc="Common C routines used by GTK+ 2.4 and other libs"
 url="http://www.gtk.org/"
-arch=(i686 x86_64)
+arch=('i686' 'x86_64')
 license=('LGPL')
 groups=('ypb' 'core-ypb')
 # zlib...libgio...
 depends=('pcre>=8.02')
-makedepends=('pkgconfig' 'python2')
+makedepends=('python2')
 options=('!libtool' '!docs')
-source=(http://ftp.gnome.org/pub/GNOME/sources/glib/2.27/glib-${pkgver}.tar.bz2
+source=(http://ftp.gnome.org/pub/gnome/sources/${_name}/${_minorver}/${_name}-${pkgver}.tar.bz2
         glib2.sh
         glib2.csh)
-sha256sums=('aad3038db865b762e01b1dc455ffd601b4083c069018d290e5fdfe1a61d328dc'
+sha256sums=('6a3b5ab45cf7b052e9d471e8ee8f68f64766c5edbbc5ae22b308b59a1c619787'
             '9456872cdedcc639fb679448d74b85b0facf81033e27157d2861b991823b5a2a'
             '8d5626ffa361304ad3696493c0ef041d0ab10c857f6ef32116b3e2878ecf89e3')
 
 build() {
-  cd "${srcdir}/glib-${pkgver}"
+  cd "${srcdir}/${_name}-${pkgver}"
+
   ./configure --prefix=/usr \
       --sysconfdir=/etc \
       --with-pcre=system \
       --disable-fam
   make
+}
+
+package() {
+  cd "${srcdir}/${_name}-${pkgver}"
+
   make DESTDIR="${pkgdir}" install
 
   install -d "${pkgdir}/etc/profile.d"
@@ -37,3 +45,4 @@ build() {
       chmod -x "${_i}"
   done
 }
+
