@@ -1,24 +1,29 @@
 # Maintainer: Joao Cordeiro <jlcordeiro at gmail dot com>
 # Contributor: <arsenm2@rpi.edu>
 
-pkgname=gobject-introspection-git
-pkgver=20110123
-pkgrel=3
+_basename=gobject-introspection
+pkgname=${_basename}-git
+pkgver=20110207
+pkgrel=1
 pkgdesc="GObject Introspection"
 arch=('i686' 'x86_64')
 url="http://live.gnome.org/GObjectIntrospection/"
-license=('LGPL')
-depends=('glib2' 'python2' 'libffi')
+license=('GPL2' 'LGPL2')
+groups=('ypb' 'extra-ypb' 'aur-ypb')
+depends=('glib2>=2.24.0' 'python2>=2.5' 'libffi>=3.0.9')
 optdepends=()
-makedepends=('git' 'pkgconfig' 'autoconf' 'gtk-doc' 'gnome-common' 'bison')
-provides=('gobject-introspection=0.10.0' 'gobject-introspection-git')
-conflicts=('gobject-introspection' 'gobject-introspection-svn')
+makedepends=('git' 'gtk-doc=>1.12' 'gnome-common')
+provides=("${_basename}=0.10.2")
+conflicts=("${_basename}" "${_basename}-svn")
 options=(!makeflags docs)
 install=
 source=()
+md5sums=()
+
+#git clone git://git.gnome.org/gir-repository
 
 _gitroot="git://git.gnome.org/gobject-introspection"
-_gitname="gobject-introspection"
+_gitname="${_basename}.origin"
 
 build() {
   cd $srcdir
@@ -28,25 +33,32 @@ build() {
     cd $_gitname && git pull origin
     msg "The local files are updated."
   else
-    git clone $_gitroot
+    git clone $_gitroot $_gitname
   fi
 
   msg "GIT checkout done or server timeout"
   msg "Starting make..."
 
-  cp -r $srcdir/$_gitname $srcdir/$_gitname-build
+  rm -rf "$srcdir/$_gitname-build"
+  git clone $srcdir/$_gitname $srcdir/$_gitname-build
   cd $srcdir/$_gitname-build
 
   sed -i 's|^# Python|# Python\
       PYTHON=/usr/bin/python2|' configure.ac
   
   msg "Starting build"
-  ./autogen.sh
-  ./configure --prefix=/usr
-  make || return 1
+  ./autogen.sh --prefix=/usr
+#  ./configure --prefix=/usr
+  make
+}
+
+package() {
+  cd $srcdir/$_gitname-build
   make DESTDIR=$pkgdir install
 
-  rm -rf $srcdir/$_gitname-build
+  sed -i "s|#!/usr/bin/env python|#!/usr/bin/env python2|" \
+    "${pkgdir}"/usr/lib/gobject-introspection/giscanner/*.py
 }
 
 # vim:set ts=2 sw=2 et:
+
