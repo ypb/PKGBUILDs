@@ -6,7 +6,7 @@
 
 pkgname=tdb
 pkgver=1.2.9
-pkgrel=0
+pkgrel=1
 pkgdesc="A Trivial Database, GDBM/BDB-like, but for simultaneous writers and transactions"
 arch=(i686 x86_64)
 license=('LGPL3')
@@ -18,24 +18,29 @@ makedepends=('python2' 'libxslt' 'docbook-xsl')
 optdepends=('python2: for python bindings')
 options=()
 
+_waf=buildtools/bin/waf
+_docs=(README tracing.txt)
+
 build() {
    cd ${srcdir}/${pkgname}-${pkgver}
-   #sed -i 's#python2\.6\([^ ]*\)#python2.7\1 python2.6\1#' configure
-   # Use system docbook.xsl
-   #_manstyle="/usr/share/xml/docbook/xsl-stylesheets-1.75.2/manpages/docbook.xsl"
-   #sed -i "s#http.*xsl#$_manstyle#" tdb.mk
 
-   PYTHON_CONFIG=/usr/bin/python2-config \
-	 PYTHON=/usr/bin/python2 \
+   PYTHON=/usr/bin/python2 \
 	 XSLTPROC="xsltproc --nonet --catalogs" \
-	 ./configure --prefix=/usr \
-               --localstatedir=/var \
-               --sysconfdir=/etc/samba
-   make
+	 python2 ${_waf} configure \
+	  --prefix=/usr \
+	  --localstatedir=/var \
+	  --sysconfdir=/etc/samba
+
+   python2 ${_waf} build
 }
 
 package() {
    cd ${srcdir}/${pkgname}-${pkgver}
 
-   make DESTDIR=$pkgdir/ install
+   python2 ${_waf} install --destdir=$pkgdir/
+
+   install -d ${pkgdir}/usr/share/doc/${pkgname}
+   for f in ${_docs[*]} ; do
+	 install -m644 docs/$f ${pkgdir}/usr/share/doc/${pkgname}/$f
+   done
 }
