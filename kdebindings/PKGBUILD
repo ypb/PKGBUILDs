@@ -1,4 +1,4 @@
-# $Id: PKGBUILD 59825 2009-11-28 01:40:17Z andrea $
+# $Id: PKGBUILD 107102 2011-01-21 11:16:03Z andrea $
 # Maintainer: Andrea Scarpino <andrea@archlinux.org>
 # Contributor: Pierre Schmitz <pierre@archlinux.de>
 
@@ -7,22 +7,18 @@ pkgname=('kdebindings-csharp'
          'kdebindings-python'
          'kdebindings-ruby'
          'kdebindings-smoke')
-pkgver=4.5.3
+pkgver=4.6.0
 pkgrel=1
 arch=('i686' 'x86_64')
 url='http://www.kde.org'
 license=('GPL' 'LGPL')
-makedepends=('pkgconfig' 'cmake' 'automoc4' 'pyqt' 'kdepim-runtime' 'mono'
+makedepends=('pkgconfig' 'cmake' 'automoc4' 'python2-qt' 'kdepim-runtime' 'mono'
 	'kdegraphics-okular' 'qwt' 'docbook-xsl' 'boost' 'qscintilla' 'ruby')
-source=("http://download.kde.org/stable/${pkgver}/src/${pkgbase}-${pkgver}.tar.bz2"
-	'fix-pyqt4-build.patch')
-sha1sums=('84a86395cf0dfb328111a5492e78a1967f6a1146'
-          '36b52d147fee24a65c756baaad00e3d1ac081d3d')
+source=("http://download.kde.org/stable/${pkgver}/src/${pkgbase}-${pkgver}.tar.bz2")
+sha1sums=('a2d641bbee7fddfbd76652fb41cd784d8c92288c')
 
 build() {
 	cd ${srcdir}/${pkgbase}-${pkgver}
-
-	patch -Np0 -i ${srcdir}/fix-pyqt4-build.patch
 
 	# fix ruby
 	for f in `find ruby -name CMakeLists.txt`; do
@@ -54,7 +50,7 @@ package_kdebindings-csharp() {
 
 package_kdebindings-python() {
 	pkgdesc='KDE bindings for python'
-	depends=('kdepim-runtime' 'pyqt' 'qscintilla')
+	depends=('kdepim-runtime' 'python2-qt' 'qscintilla')
 	cd $srcdir/build/python
 	make DESTDIR=$pkgdir install
 
