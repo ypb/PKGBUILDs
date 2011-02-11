@@ -2,15 +2,19 @@
 # Contributor: <david@pako.st>
 
 pkgname=chicken
-pkgver=4.6.0
-pkgrel=2
+pkgver=4.6.5
+pkgrel=1
 pkgdesc='A compiler for R5RS scheme, featuring handy extensions'
 arch=('i686' 'x86_64')
 url='http://www.call-with-current-continuation.org/'
 license=('BSD')
+groups=('ypb' 'community-ypb')
 depends=('gcc')
-source=("http://code.call-cc.org/releases/${pkgver}/${pkgname}-${pkgver}.tar.gz")
-md5sums=('538a93e786e550ad848a040bcd902184')
+#source=("http://code.call-cc.org/releases/${pkgver}/${pkgname}-${pkgver}.tar.gz")
+source=("http://code.call-cc.org/dev-snapshots/2011/02/09/${pkgname}-${pkgver}.tar.gz")
+#md5sums=('538a93e786e550ad848a040bcd902184')
+md5sums=('90919f0b04404899506a04d17302b0ac')
+options=(!emptydirs)
 
 build() {
   cd ${pkgname}-${pkgver}
@@ -30,7 +34,8 @@ package() {
   install -D -m644 LICENSE \
     ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE
 
+  rm ${pkgdir}/usr/lib/libchicken.a
   # should be a symbolic link not a copy otherwise ldconfig will cry
   rm -f ${pkgdir}/usr/lib/libchicken.so
-  ln -s /usr/lib/libchicken.so.5 ${pkgdir}/usr/lib/libchicken.so
+  ln -s /usr/lib/libchicken.so.6 ${pkgdir}/usr/lib/libchicken.so
 }
