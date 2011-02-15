@@ -2,7 +2,7 @@
 
 _name=zat
 pkgname=zathura-ypb
-pkgver=20110211
+pkgver=20110215
 pkgrel=1
 pkgdesc="a PDF viewer"
 arch=('i686' 'x86_64')
@@ -14,7 +14,10 @@ makedepends=('git')
 
 #conflicts=('zathura')
 #replaces=('zathura')
-provides=('zathura' 'bin/zat')
+# TODO add .installl file handling bin link?
+provides=('bin/zathura')
+# looks like providing 'zathura' conflictz with zathura-git in spite of
+# not being called zathura ourselves... silly?
 
 _gitroot='git://github.com/ypb/zat.git'
 _gitname='zathura.ypb'
@@ -37,6 +40,7 @@ build() {
   git clone "$srcdir/$_gitname" "$srcdir/$_gitname-build"
   cd "$srcdir/$_gitname-build"
 
+# just in case...
   git checkout ypb
   make
 }
