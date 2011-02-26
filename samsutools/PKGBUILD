@@ -1,18 +1,26 @@
 pkgname="samsutools"
 pkgver="20080730"
-pkgrel=2
+pkgrel=3
 pkgdesc="Tools for Samsung Mobile Phones."
 url="http://samsutools.berlios.de/"
-arch=('i686' 'x86_64')
+arch=('any')
 license=('BSD')
-depends=('python>=2.4' 'python-fuse>=0.2.1' 'ppp')
+depends=('python2>=2.4' 'python-fuse>=0.2.1' 'ppp')
+optdepends=('iptables: samsungjava-ppp')
 source=("http://download.berlios.de/samsutools/$pkgname-$pkgver-alpha.tar.gz")
 md5sums=('fdea4809a3ffa2388c9a3a15a0c137f4')
 
 build() {
+  :
+}
+
+package() {
   cd "$srcdir/$pkgname-$pkgver-alpha"
   install -d "$pkgdir/usr/bin"
-  install -m755 samsung{fs,java} "$pkgdir/usr/bin"
+  for f in samsung{fs,java} ; do
+    sed 's|\(bin/env python\)|\12|' $f > "$pkgdir/usr/bin/$f"
+    chmod 755 "$pkgdir/usr/bin/$f"
+  done
   install -m755 "conf/ppp.setup.example.linux" "$pkgdir/usr/bin/samsungjava-ppp"
   install -d "$pkgdir/usr/share/licenses/samsutools"
   install -m644 "LICENSE" "$pkgdir/usr/share/licenses/samsutools"
