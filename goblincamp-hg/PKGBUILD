@@ -1,30 +1,29 @@
-# Maintainer: Kevin Whitaker <eyecreate at gmail dot com>
-# Contributor: Michal Kowalski <kowalski.michal@gmail.com>
+# Maintainer: Michal Kowalski <kowalski TOD michal TA gmail TOD com>
+# Contributor: Kevin Whitaker <eyecreate at gmail dot com>
 
 pkgname=goblincamp-hg	
-pkgver=1029
-pkgrel=3
-pkgdesc="Goblin roguelike/citybuilder inspired by Dwarffortress"
+pkgver=986
+pkgrel=5
+pkgdesc="Goblin Camp is a roguelike citybuilder, inspired by Anno 1404, Dwarf Fortress and Dungeon Keeper"
 arch=('i686' 'x86_64')
 url="http://www.goblincamp.com/"
-license=('GPL')
-depends=('libtcod-svn=494' 'boost>=1.44.0' 'python2')
-makedepends=('mercurial')
-source=(goblincamp.desktop goblincamp.png gc-config.jam patch.patch)
+license=('GPL3')
+depends=('libtcod-svn=494' 'boost-libs>=1.44.0' 'python2')
+makedepends=('mercurial' 'boost>=1.44.0')
+#options=(!strip)
+source=(goblincamp.desktop goblincamp.png gc-config.jam patch.patch savefile.diff)
 
 _hgroot="http://bitbucket.org/genericcontainer"
 _hgrepo="goblin-camp"
+_variant=release
+#_variant=debug
 
 build() {
   cd "$srcdir"
-  msg "Connecting to Mercurial server $_hgroot"
   if [ -d $_hgrepo ]; then
-    cd $_hgrepo
-    hg pull -u || return 1
-    msg "Finished updating the local repository!"
+    (cd $_hgrepo ; hg pull -ur $pkgver) || return 1
   else
-    hg clone ${_hgroot} ${_hgrepo} || return 1
-    msg "Initial pull complete!"
+    hg clone -u $pkgver ${_hgroot}/${_hgrepo} || return 1
   fi
 
   rm -rf "$srcdir/$_hgrepo-build"
@@ -32,8 +31,9 @@ build() {
   cd "$srcdir/$_hgrepo-build"
 
   patch -p1 < ../patch.patch
+  patch -p1 < ../savefile.diff
   cp ../gc-config.jam .
-  bjam --user-config=gc-config.jam variant=release dist
+  bjam --user-config=gc-config.jam variant=${_variant} dist || return 1
 }
 
 package() {
@@ -42,11 +42,12 @@ package() {
   mkdir -p $pkgdir/usr/{bin,share/{applications,pixmaps}}
   install -m644 $srcdir/goblincamp.desktop $pkgdir/usr/share/applications/goblin-camp.desktop
   install -m644 $srcdir/goblincamp.png $pkgdir/usr/share/pixmaps/goblin-camp.png
-  install -m755 build/dist/release*/bin/goblin-camp $pkgdir/usr/bin/goblin-camp
-  cp -r build/dist/release*/share/goblin-camp* $pkgdir/usr/share
+  install -m755 build/dist/${_variant}*/bin/goblin-camp $pkgdir/usr/bin/goblin-camp
+  cp -r build/dist/${_variant}*/share/goblin-camp* $pkgdir/usr/share
 }
 
-md5sums=('14e3dec2ad719325f3117eace8e11595'
+md5sums=('bdaf126929c936bc482a94eb6295c828'
          'a531e29c24395df730ba2277a7a4c212'
          '813f44ec1b0996e94267f35199ec85a0'
-         '7a0676b04a43b1a64e1853e1622a041e')
+         '7a0676b04a43b1a64e1853e1622a041e'
+         '34a941e5ea2246ba78695d919b9b07c2')

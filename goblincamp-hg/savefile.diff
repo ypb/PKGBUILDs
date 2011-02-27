@@ -1,0 +1,11 @@
+diff -r f59fe45a67c8 Goblin Camp/src/data/Serialization.cpp
+--- a/Goblin Camp/src/data/Serialization.cpp	Mon Nov 22 00:12:40 2010 +0100
++++ b/Goblin Camp/src/data/Serialization.cpp	Fri Dec 24 12:23:16 2010 +0100
+@@ -259,6 +259,7 @@
+ 	ar & squad;
+ 	ar & attacks;
+ 	ar & escaped;
++	ar & addedTasksToCurrentJob;
+ 	ar & Skills;
+ }
+ 
