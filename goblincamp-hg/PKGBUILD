@@ -2,16 +2,20 @@
 # Contributor: Kevin Whitaker <eyecreate at gmail dot com>
 
 pkgname=goblincamp-hg	
-pkgver=986
-pkgrel=5
+pkgver=1448
+pkgrel=1
 pkgdesc="Goblin Camp is a roguelike citybuilder, inspired by Anno 1404, Dwarf Fortress and Dungeon Keeper"
 arch=('i686' 'x86_64')
 url="http://www.goblincamp.com/"
 license=('GPL3')
-depends=('libtcod-svn=494' 'boost-libs>=1.44.0' 'python2')
-makedepends=('mercurial' 'boost>=1.44.0')
+depends=('libgl' 'python2' 'zlib' 'libpng' 'sdl' 'sdl_image')
+makedepends=('mercurial')
 #options=(!strip)
-source=(goblincamp.desktop goblincamp.png gc-config.jam patch.patch savefile.diff)
+source=(goblincamp.desktop goblincamp.png gc-config.jam patch-r1448.patch)
+md5sums=('bdaf126929c936bc482a94eb6295c828'
+         'a531e29c24395df730ba2277a7a4c212'
+         '7ef27d734d82b3b966b1a66c41dab867'
+         '6caf3e5dcdbd73bb8edd8080f00b1069')
 
 _hgroot="http://bitbucket.org/genericcontainer"
 _hgrepo="goblin-camp"
@@ -30,10 +34,9 @@ build() {
   cp -r "$srcdir/$_hgrepo" "$srcdir/$_hgrepo-build"
   cd "$srcdir/$_hgrepo-build"
 
-  patch -p1 < ../patch.patch
-  patch -p1 < ../savefile.diff
+  patch -p1 < ../patch-r1448.patch
   cp ../gc-config.jam .
-  bjam --user-config=gc-config.jam variant=${_variant} dist || return 1
+  bjam --user-config=gc-config.jam variant=${_variant} || return 1
 }
 
 package() {
@@ -42,12 +45,7 @@ package() {
   mkdir -p $pkgdir/usr/{bin,share/{applications,pixmaps}}
   install -m644 $srcdir/goblincamp.desktop $pkgdir/usr/share/applications/goblin-camp.desktop
   install -m644 $srcdir/goblincamp.png $pkgdir/usr/share/pixmaps/goblin-camp.png
-  install -m755 build/dist/${_variant}*/bin/goblin-camp $pkgdir/usr/bin/goblin-camp
-  cp -r build/dist/${_variant}*/share/goblin-camp* $pkgdir/usr/share
+  install -m755 build/bin-${_variant}*/bin/goblin-camp $pkgdir/usr/bin/goblin-camp
+  cp -r build/bin-${_variant}*/share/goblin-camp* $pkgdir/usr/share
 }
 
-md5sums=('bdaf126929c936bc482a94eb6295c828'
-         'a531e29c24395df730ba2277a7a4c212'
-         '813f44ec1b0996e94267f35199ec85a0'
-         '7a0676b04a43b1a64e1853e1622a041e'
-         '34a941e5ea2246ba78695d919b9b07c2')
