@@ -2,14 +2,15 @@
 #Contributed by Peter Dennis <listen.ppublic@gmail.com>, based on PKGBUILD by:
 #Contributor: Ariel Kanterewicz <asdkant@gmail.com>
 pkgname=qbzr
-pkgver=0.19.2
-pkgrel=3
+pkgver=0.19.3
+pkgrel=1
 pkgdesc="A GUI front end for Bazaar based on the Qt toolkit."
 arch=('i686' 'x86_64')
 url="http://wiki.bazaar.canonical.com/QBzr"
 license=('GPL')
+groups=('ypb')
 depends=('python2-qt>=4' 'bzr' 'python2')
-source=(http://launchpad.net/qbzr/0.19/0.19.2/+download/qbzr-0.19.2.tar.gz)
+source=(http://launchpad.net/qbzr/0.19/0.19.3/+download/qbzr-0.19.3.tar.gz)
 md5sums=('e8dbcf7404e5e2325e6ae6ea303cec57')
 
 build() {
@@ -18,3 +19,4 @@ sed -i -e "s=/usr/bin/env python=/usr/bin/env python2=g" ./setup.py
 ./setup.py build || return 1
 ./setup.py install --prefix=$startdir/pkg/usr install
 } 
+md5sums=('b2749ed4eb5ce5c501245fccd227011e')
